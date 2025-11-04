@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+:root {
+  --font-inter: 'Inter', sans-serif;
+}
+
+.font-inter {
+  font-family: var(--font-inter);
+}
+
+
+html, body, #__next {
+  scroll-behavior: smooth;
+  height: 100%;
+  margin: 0;
+  padding: 0;  
+  overflow-x: hidden;
+}
+
+.bandu-gradient {
+  position: relative;
+  background-color: #f5f5f5; /* oqish fon */
+  overflow: hidden;
+}
+
+.bandu-gradient::before {
+  content: "";
+  position: absolute;
+  top: -200px;      /* biroz yuqoriroqdan chiqadi */
+  left: -200px;     /* biroz chaproqda */
+  width: 600px;     /* kattalashgan nur diametri */
+  height: 600px;
+
+  filter: blur(60px); /* yumshoqlikni oshirdik */
+  z-index: 0;
+}
+
+.bandu-gradient > * {
+  position: relative;
+  z-index: 1;
+}
+
+
+
+

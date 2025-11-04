@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 18, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/acer/OneDrive/%D0%A0%D0%B0%D0%B1%D0%BE%D1%87%D0%B8%D0%B9%20%D1%81%D1%82%D0%BE%D0%BB/bandu-roadmap/app/admin/page.tsx"],"sourcesContent":["import AdminPanel from \"./adminpanel\";\r\n\r\nexport default function Admin() {\r\n  return (\r\n    <div className=\"\">\r\n      <p>\r\n        Lorem ipsum dolor, sit amet consectetur adipisicing elit. Maiores\r\n        debitis tenetur possimus labore repudiandae. Eligendi nostrum sapiente\r\n        iste voluptas provident sequi tempora, quis repudiandae quibusdam\r\n        aperiam voluptates? Rerum, nesciunt doloribus.\r\n      </p>\r\n    </div>\r\n  );\r\n}\r\n"],"names":[],"mappings":";;;;;;AAEe,SAAS;IACtB,qBACE,8OAAC;QAAI,WAAU;kBACb,cAAA,8OAAC;sBAAE;;;;;;;;;;;AAQT","debugId":null}}]
+}
