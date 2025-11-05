@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, JSX } from "react";
 import axios from "axios";
+import { log } from "node:console";
 
 type ViewType = "dashboard" | "users" | "places" | "bookings" | "roadmap";
 
@@ -83,7 +84,7 @@ export default function AdminPanel(): JSX.Element {
     setError("");
     try {
       const res = await axios.post(
-        "/api/login",
+        "https://api.bandu.uz/api/v1/auth/login",
         { phoneNumber: phone, password: password },
         { headers: { "Content-Type": "application/json" } }
       );
@@ -96,6 +97,7 @@ export default function AdminPanel(): JSX.Element {
       } else {
         setError("Login failed: Invalid response structure");
       }
+      console.log("Login successful:", res.data);
     } catch (err: any) {
       console.error("Login error:", err.response?.data || err.message);
       const message = err.response?.data?.message || "Invalid credentials or server error";
