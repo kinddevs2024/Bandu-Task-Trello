@@ -41,7 +41,7 @@ export default function AdminPanel(): JSX.Element {
   // ----------------- Data fetching -----------------
   const fetchUsers = async () => {
     try {
-      const res = await api.get("/users", { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.get("/auth/users", { headers: { Authorization: `Bearer ${token}` } });
       setUsers(res.data || []);
     } catch (err) {
       console.error(err);
@@ -50,7 +50,7 @@ export default function AdminPanel(): JSX.Element {
 
   const fetchPlaces = async () => {
     try {
-      const res = await api.get("/places", { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.get("/auth/places", { headers: { Authorization: `Bearer ${token}` } });
       setPlaces(res.data || []);
     } catch (err) {
       console.error(err);
@@ -59,7 +59,7 @@ export default function AdminPanel(): JSX.Element {
 
   const fetchBookings = async () => {
     try {
-      const res = await api.get("/bookings", { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.get("/auth/bookings", { headers: { Authorization: `Bearer ${token}` } });
       setBookings(res.data || []);
     } catch (err) {
       console.error(err);
@@ -68,7 +68,7 @@ export default function AdminPanel(): JSX.Element {
 
   const fetchRoadmap = async () => {
     try {
-      const res = await api.get("/roadmap", { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.get("/auth/roadmap", { headers: { Authorization: `Bearer ${token}` } });
       setRoadmap(res.data || []);
       console.log(res.data);
     } catch (err) {
