@@ -43,7 +43,7 @@ export default function AdminPanel(): JSX.Element {
   // ----------------- Data fetching -----------------
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("/api/users", { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.get("/api/v1/users", { headers: { Authorization: `Bearer ${token}` } });
       setUsers(res.data || []);
     } catch (err) {
       console.error(err);
@@ -52,7 +52,7 @@ export default function AdminPanel(): JSX.Element {
 
   const fetchPlaces = async () => {
     try {
-      const res = await axios.get("/api/places", { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.get("/api/v1/places", { headers: { Authorization: `Bearer ${token}` } });
       setPlaces(res.data || []);
     } catch (err) {
       console.error(err);
@@ -61,7 +61,7 @@ export default function AdminPanel(): JSX.Element {
 
   const fetchBookings = async () => {
     try {
-      const res = await axios.get("/api/bookings", { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.get("/api/v1/bookings", { headers: { Authorization: `Bearer ${token}` } });
       setBookings(res.data || []);
     } catch (err) {
       console.error(err);
@@ -70,7 +70,7 @@ export default function AdminPanel(): JSX.Element {
 
   const fetchRoadmap = async () => {
     try {
-      const res = await axios.get("/api/roadmap", { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.get("/api/v1/roadmap", { headers: { Authorization: `Bearer ${token}` } });
       setRoadmap(res.data || []);
     } catch (err) {
       console.error(err);
