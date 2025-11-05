@@ -78,30 +78,33 @@ export default function AdminPanel(): JSX.Element {
   };
 
   // ----------------- Login & Logout -----------------
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    try {
-      const res = await axios.post(
-        "/api/login",
-        { phoneNumber: phone, password: password },
-        { headers: { "Content-Type": "application/json" } }
-      );
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError("");
+  try {
+    // ⚠️ Изменено: Используйте полный URL-адрес для конечной точки логина
+    const loginUrl = "https://api.bandu.uz/api/v1/auth/login"; 
+    
+    const res = await axios.post(
+      loginUrl, // Используем полный URL-адрес
+      { phoneNumber: phone, password: password },
+      { headers: { "Content-Type": "application/json" } }
+    );
 
-      const accessToken = res.data?.accessToken || res.data?.token || res.data?.data?.accessToken;
+    const accessToken = res.data?.accessToken || res.data?.token || res.data?.data?.accessToken;
 
-      if (accessToken && typeof window !== "undefined") {
-        setToken(accessToken);
-        localStorage.setItem("token", accessToken);
-      } else {
-        setError("Login failed: Invalid response structure");
-      }
-    } catch (err: any) {
-      console.error("Login error:", err.response?.data || err.message);
-      const message = err.response?.data?.message || "Invalid credentials or server error";
-      setError(message);
+    if (accessToken && typeof window !== "undefined") {
+      setToken(accessToken);
+      localStorage.setItem("token", accessToken);
+    } else {
+      setError("Login failed: Invalid response structure");
     }
-  };
+  } catch (err: any) {
+    console.error("Login error:", err.response?.data || err.message);
+    const message = err.response?.data?.message || "Invalid credentials or server error";
+    setError(message);
+  }
+};
 
   const handleLogout = () => {
     if (typeof window !== "undefined") localStorage.removeItem("token");
