@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, JSX } from "react";
-import axios from "axios";
+import api from "../api/api"; // ✅ Import your axios instance
 
 type ViewType = "dashboard" | "users" | "places" | "bookings" | "roadmap";
 
@@ -25,9 +25,7 @@ export default function AdminPanel(): JSX.Element {
     setIsClient(true);
     if (typeof window !== "undefined") {
       const storedToken = localStorage.getItem("token");
-      if (storedToken) {
-        setToken(storedToken);
-      }
+      if (storedToken) setToken(storedToken);
     }
   }, []);
 
@@ -43,7 +41,7 @@ export default function AdminPanel(): JSX.Element {
   // ----------------- Data fetching -----------------
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("/api/v1/users", { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.get("/users", { headers: { Authorization: `Bearer ${token}` } });
       setUsers(res.data || []);
     } catch (err) {
       console.error(err);
@@ -52,7 +50,7 @@ export default function AdminPanel(): JSX.Element {
 
   const fetchPlaces = async () => {
     try {
-      const res = await axios.get("/api/v1/places", { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.get("/places", { headers: { Authorization: `Bearer ${token}` } });
       setPlaces(res.data || []);
     } catch (err) {
       console.error(err);
@@ -61,7 +59,7 @@ export default function AdminPanel(): JSX.Element {
 
   const fetchBookings = async () => {
     try {
-      const res = await axios.get("/api/v1/bookings", { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.get("/bookings", { headers: { Authorization: `Bearer ${token}` } });
       setBookings(res.data || []);
     } catch (err) {
       console.error(err);
@@ -70,44 +68,41 @@ export default function AdminPanel(): JSX.Element {
 
   const fetchRoadmap = async () => {
     try {
-      const res = await axios.get("/api/v1/roadmap", { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.get("/roadmap", { headers: { Authorization: `Bearer ${token}` } });
       setRoadmap(res.data || []);
     } catch (err) {
       console.error(err);
     }
   };
 
-  // ----------------- Login & Logout -----------------
-const handleLogin = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setError("");
-  try {
-    // ⚠️ Изменено: Используйте полный URL-адрес для конечной точки логина
-    const loginUrl = "https://api.bandu.uz/api/v1/auth/login"; 
-    
-    const res = await axios.post(
-      loginUrl, // Используем полный URL-адрес
-      { phoneNumber: phone, password: password },
-      { headers: { "Content-Type": "application/json" } }
-    );
+  // ----------------- Login -----------------
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    try {
+      const res = await api.post("/auth/login", {
+        phoneNumber: phone,
+        password: password,
+      });
 
-    const accessToken = res.data?.accessToken || res.data?.token || res.data?.data?.accessToken;
+      const accessToken =
+        res.data?.accessToken || res.data?.token || res.data?.data?.accessToken;
 
-    if (accessToken && typeof window !== "undefined") {
-      setToken(accessToken);
-      localStorage.setItem("token", accessToken);
-    } else {
-      setError("Login failed: Invalid response structure");
+      if (accessToken) {
+        setToken(accessToken);
+        localStorage.setItem("token", accessToken);
+      } else {
+        setError("Login failed: Invalid response structure");
+      }
+    } catch (err: any) {
+      console.error("Login error:", err.response?.data || err.message);
+      const message = err.response?.data?.message || "Invalid credentials or server error";
+      setError(message);
     }
-  } catch (err: any) {
-    console.error("Login error:", err.response?.data || err.message);
-    const message = err.response?.data?.message || "Invalid credentials or server error";
-    setError(message);
-  }
-};
+  };
 
   const handleLogout = () => {
-    if (typeof window !== "undefined") localStorage.removeItem("token");
+    localStorage.removeItem("token");
     setToken(null);
   };
 
