@@ -70,6 +70,7 @@ export default function AdminPanel(): JSX.Element {
     try {
       const res = await api.get("/roadmap", { headers: { Authorization: `Bearer ${token}` } });
       setRoadmap(res.data || []);
+      console.log(res.data);
     } catch (err) {
       console.error(err);
     }
