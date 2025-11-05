@@ -107,6 +107,7 @@ export default function Roadmap() {
 
               return (
                 <div key={step.id} className={containerClass}>
+                  {/* Header */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div
@@ -116,7 +117,7 @@ export default function Roadmap() {
                               ? "bg-gray-800 text-gray-400"
                               : "bg-gray-200 text-gray-500"
                             : isActive
-                            ? "bg-gradient-to-br from-yellow-500 to-orange-500 text-white animate-pulse"
+                            ? "bg-linear-to-br from-yellow-500 to-orange-500 text-white animate-pulse"
                             : isDark
                             ? "bg-gray-700 text-gray-200 border border-gray-600"
                             : "bg-white text-gray-800 border border-gray-100"
@@ -124,7 +125,6 @@ export default function Roadmap() {
                       >
                         {step.id}
                       </div>
-
                       <div>
                         <h3
                           className={`text-lg sm:text-xl font-semibold transition-colors duration-300 ${
@@ -187,69 +187,69 @@ export default function Roadmap() {
                     </div>
                   </div>
 
-                  <div className="mt-4 space-y-3">
-                    {step.tasks?.length > 0 && (
-                      <>
-                        <h4
-                          className={`font-medium transition-colors duration-300 ${
-                            isDark ? "text-gray-300" : "text-gray-700"
-                          }`}
-                        >
-                          Tasks:
-                        </h4>
-                        <ul className="space-y-2">
-                          {step.tasks.map((task) => (
-                            <li
-                              key={task.id}
-                              className="flex items-start gap-3"
+                  {/* Tasks */}
+                  {step.tasks && step.tasks.length > 0 && (
+                    <div className="mt-4 space-y-3">
+                      <h4
+                        className={`font-medium transition-colors duration-300 ${
+                          isDark ? "text-gray-300" : "text-gray-700"
+                        }`}
+                      >
+                        Tasks:
+                      </h4>
+                      <ul className="space-y-2">
+                        {step.tasks.map((task) => (
+                          <li
+                            key={task.id}
+                            className="flex items-start gap-3"
+                          >
+                            <div
+                              className={`shrink-0 w-5 h-5 mt-0.5 rounded border transition-colors duration-300 ${
+                                task.completed
+                                  ? isDark
+                                    ? "bg-green-700 border-green-500"
+                                    : "bg-green-50 border-green-200"
+                                  : isDark
+                                  ? "border-gray-600"
+                                  : "border-gray-300"
+                              }`}
                             >
-                              <div
-                                className={`flex-shrink-0 w-5 h-5 mt-0.5 rounded border transition-colors duration-300 ${
-                                  task.completed
-                                    ? isDark
-                                      ? "bg-green-700 border-green-500"
-                                      : "bg-green-50 border-green-200"
-                                    : isDark
-                                    ? "border-gray-600"
-                                    : "border-gray-300"
-                                }`}
-                              >
-                                {task.completed && (
-                                  <svg
-                                    className="w-full h-full text-green-500"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                  >
-                                    <path
-                                      fillRule="evenodd"
-                                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                      clipRule="evenodd"
-                                    />
-                                  </svg>
-                                )}
-                              </div>
-                              <span
-                                className={`text-sm transition-colors duration-300 ${
-                                  task.completed
-                                    ? isDark
-                                      ? "text-gray-400 line-through"
-                                      : "text-gray-500 line-through"
-                                    : isActive
-                                    ? "text-white"
-                                    : isDark
-                                    ? "text-gray-300"
-                                    : "text-gray-600"
-                                }`}
-                              >
-                                {task.task}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </>
-                    )}
-                  </div>
+                              {task.completed && (
+                                <svg
+                                  className="w-full h-full text-green-500"
+                                  viewBox="0 0 20 20"
+                                  fill="currentColor"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              )}
+                            </div>
+                            <span
+                              className={`text-sm transition-colors duration-300 ${
+                                task.completed
+                                  ? isDark
+                                    ? "text-gray-400 line-through"
+                                    : "text-gray-500 line-through"
+                                  : isActive
+                                  ? "text-white"
+                                  : isDark
+                                  ? "text-gray-300"
+                                  : "text-gray-600"
+                              }`}
+                            >
+                              {task.task}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
+                  {/* Result */}
                   {step.result && (
                     <p
                       className={`mt-4 font-medium transition-colors duration-300 ${
@@ -268,6 +268,7 @@ export default function Roadmap() {
                     </p>
                   )}
 
+                  {/* Progress Bar */}
                   <div className="mt-4">
                     <div
                       className={`h-1 rounded-full transition-all duration-300 ${
@@ -276,7 +277,7 @@ export default function Roadmap() {
                             ? "bg-gray-700"
                             : "bg-gray-200"
                           : isActive
-                          ? "bg-gradient-to-r from-yellow-400 to-yellow-400 animate-pulse"
+                          ? "bg-linear-to-r from-yellow-400 to-yellow-400 animate-pulse"
                           : isDark
                           ? "bg-gray-600"
                           : "bg-gray-100"

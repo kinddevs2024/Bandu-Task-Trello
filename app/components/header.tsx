@@ -22,10 +22,9 @@ export default function Header() {
     "p-2 rounded-full border border-white/20 backdrop-blur-md shadow-sm transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-105 hover:shadow-md active:scale-95";
 
   const getThemeButtonClasses = (btnTheme: string) =>
-    `${baseButtonClasses} ${
-      theme === btnTheme
-        ? "bg-white/30 dark:bg-black/20 scale-105 shadow-md"
-        : "bg-white/15 dark:bg-black/10 hover:bg-white/50 dark:hover:bg-black/30"
+    `${baseButtonClasses} ${theme === btnTheme
+      ? "bg-white/30 dark:bg-black/20 scale-105 shadow-md"
+      : "bg-white/15 dark:bg-black/10 hover:bg-white/50 dark:hover:bg-black/30"
     }`;
 
   return (

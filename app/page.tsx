@@ -6,10 +6,8 @@ export default function Home() {
   return (
     <div>
       <Header />
-      <div className="">
-        <WelcomeSection />
-        <Roadmap />
-      </div>
+      <WelcomeSection />
+      <Roadmap />
     </div>
   );
 }
