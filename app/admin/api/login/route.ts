@@ -1,15 +1,12 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method Not Allowed' });
-  }
-
+export async function POST(req: NextRequest) {
   try {
-    const { phoneNumber, password } = req.body;
+    const body = await req.json();
+    const { phoneNumber, password } = body;
 
     const response = await axios.post(
       `${API_BASE}/auth/login`,
@@ -17,11 +14,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       { headers: { 'Content-Type': 'application/json' } }
     );
 
-    return res.status(response.status).json(response.data);
+    return NextResponse.json(response.data, { status: response.status });
   } catch (error: any) {
     console.error('Login proxy error:', error.response?.data || error.message);
     const status = error.response?.status || 500;
     const message = error.response?.data?.message || 'Server error';
-    return res.status(status).json({ message });
+    return NextResponse.json({ message }, { status });
   }
 }
