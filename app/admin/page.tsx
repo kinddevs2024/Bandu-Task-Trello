@@ -87,28 +87,36 @@ export default function AdminPanel(): JSX.Element {
   };
 
   // Login handlers
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    try {
-      const res = await axios.post(`${API_BASE}/auth/login`, {
-        phoneNumber: phone,
-        password: password,
-      });
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError('');
 
-      const accessToken = res.data?.accessToken || res.data?.token || res.data?.data?.accessToken;
+  try {
+    // Call your Next.js API route instead of the external API directly
+    const res = await axios.post('/api/login', {
+      phoneNumber: phone,
+      password: password,
+    }, {
+      headers: { 'Content-Type': 'application/json' } // ensure JSON is sent
+    });
 
-      if (accessToken && typeof window !== 'undefined') {
-        setToken(accessToken);
-        localStorage.setItem('token', accessToken);
-      } else {
-        setError('Login failed: Invalid response structure');
-      }
-    } catch (err: any) {
-      console.error(err);
-      setError('Invalid credentials or server error');
+    // Extract token from the proxy response
+    const accessToken = res.data?.accessToken || res.data?.token || res.data?.data?.accessToken;
+
+    if (accessToken && typeof window !== 'undefined') {
+      setToken(accessToken);
+      localStorage.setItem('token', accessToken);
+    } else {
+      setError('Login failed: Invalid response structure');
     }
-  };
+  } catch (err: any) {
+    console.error('Login error:', err.response?.data || err.message);
+    // Show API error if available, fallback message otherwise
+    const message = err.response?.data?.message || 'Invalid credentials or server error';
+    setError(message);
+  }
+};
+
 
   const handleLogout = (): void => {
     if (typeof window !== 'undefined') localStorage.removeItem('token');
