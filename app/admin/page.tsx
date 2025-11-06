@@ -18,6 +18,23 @@ export default function AdminPanel(): JSX.Element {
   const [bookings, setBookings] = useState<any[]>([]);
   const [roadmap, setRoadmap] = useState<any[]>([]);
 
+  // Pagination states
+  const [usersPage, setUsersPage] = useState(1);
+  const [usersLimit] = useState(10);
+  const [usersTotal, setUsersTotal] = useState(0);
+
+  const [placesPage, setPlacesPage] = useState(1);
+  const [placesLimit] = useState(10);
+  const [placesTotal, setPlacesTotal] = useState(0);
+
+  const [bookingsPage, setBookingsPage] = useState(1);
+  const [bookingsLimit] = useState(10);
+  const [bookingsTotal, setBookingsTotal] = useState(0);
+
+  const [roadmapPage, setRoadmapPage] = useState(1);
+  const [roadmapLimit] = useState(10);
+  const [roadmapTotal, setRoadmapTotal] = useState(0);
+
   const baseButtonClasses =
     "px-4 py-2 rounded-md border border-white/20 backdrop-blur-md shadow-sm transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-105 hover:shadow-md active:scale-95 bg-white/15 dark:bg-black/10 hover:bg-white/30 dark:hover:bg-black/30";
 
@@ -29,47 +46,51 @@ export default function AdminPanel(): JSX.Element {
     }
   }, []);
 
-  // Fetch data when view changes
+  // Fetch data when view changes or page changes
   useEffect(() => {
     if (!token) return;
-    if (view === "users") fetchUsers();
-    if (view === "places") fetchPlaces();
-    if (view === "bookings") fetchBookings();
-    if (view === "roadmap") fetchRoadmap();
-  }, [view, token]);
+    if (view === "users") fetchUsers(usersPage);
+    if (view === "places") fetchPlaces(placesPage);
+    if (view === "bookings") fetchBookings(bookingsPage);
+    if (view === "roadmap") fetchRoadmap(roadmapPage);
+  }, [view, token, usersPage, placesPage, bookingsPage, roadmapPage]);
 
   // ----------------- Data fetching -----------------
-  const fetchUsers = async () => {
+  const fetchUsers = async (page: number = 1) => {
     try {
-      const res = await api.get("/users", { headers: { Authorization: `Bearer ${token}` } });
-      setUsers(res.data || []);
+      const res = await api.get(`/users?page=${page}&limit=${usersLimit}`, { headers: { Authorization: `Bearer ${token}` } });
+      setUsers(res.data.data || []);
+      setUsersTotal(res.data.total || 0);
     } catch (err) {
       console.error(err);
     }
   };
 
-  const fetchPlaces = async () => {
+  const fetchPlaces = async (page: number = 1) => {
     try {
-      const res = await api.get("/places", { headers: { Authorization: `Bearer ${token}` } });
-      setPlaces(res.data || []);
+      const res = await api.get(`/places?page=${page}&limit=${placesLimit}`, { headers: { Authorization: `Bearer ${token}` } });
+      setPlaces(res.data.data || []);
+      setPlacesTotal(res.data.total || 0);
     } catch (err) {
       console.error(err);
     }
   };
 
-  const fetchBookings = async () => {
+  const fetchBookings = async (page: number = 1) => {
     try {
-      const res = await api.get("/bookings", { headers: { Authorization: `Bearer ${token}` } });
-      setBookings(res.data || []);
+      const res = await api.get(`/bookings?page=${page}&limit=${bookingsLimit}`, { headers: { Authorization: `Bearer ${token}` } });
+      setBookings(res.data.data || []);
+      setBookingsTotal(res.data.total || 0);
     } catch (err) {
       console.error(err);
     }
   };
 
-  const fetchRoadmap = async () => {
+  const fetchRoadmap = async (page: number = 1) => {
     try {
-      const res = await api.get("/roadmap", { headers: { Authorization: `Bearer ${token}` } });
-      setRoadmap(res.data || []);
+      const res = await api.get(`/roadmap?page=${page}&limit=${roadmapLimit}`, { headers: { Authorization: `Bearer ${token}` } });
+      setRoadmap(res.data.data || []);
+      setRoadmapTotal(res.data.total || 0);
       console.log(res.data);
     } catch (err) {
       console.error(err);
@@ -206,6 +227,23 @@ export default function AdminPanel(): JSX.Element {
                 ))}
               </tbody>
             </table>
+            <div className="flex justify-between items-center mt-4">
+              <button
+                onClick={() => setUsersPage(Math.max(1, usersPage - 1))}
+                disabled={usersPage === 1}
+                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span>Page {usersPage} of {Math.ceil(usersTotal / usersLimit)}</span>
+              <button
+                onClick={() => setUsersPage(usersPage + 1)}
+                disabled={usersPage >= Math.ceil(usersTotal / usersLimit)}
+                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
           </section>
         )}
 
@@ -230,6 +268,23 @@ export default function AdminPanel(): JSX.Element {
                 ))}
               </tbody>
             </table>
+            <div className="flex justify-between items-center mt-4">
+              <button
+                onClick={() => setPlacesPage(Math.max(1, placesPage - 1))}
+                disabled={placesPage === 1}
+                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span>Page {placesPage} of {Math.ceil(placesTotal / placesLimit)}</span>
+              <button
+                onClick={() => setPlacesPage(placesPage + 1)}
+                disabled={placesPage >= Math.ceil(placesTotal / placesLimit)}
+                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
           </section>
         )}
 
@@ -256,6 +311,23 @@ export default function AdminPanel(): JSX.Element {
                 ))}
               </tbody>
             </table>
+            <div className="flex justify-between items-center mt-4">
+              <button
+                onClick={() => setBookingsPage(Math.max(1, bookingsPage - 1))}
+                disabled={bookingsPage === 1}
+                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span>Page {bookingsPage} of {Math.ceil(bookingsTotal / bookingsLimit)}</span>
+              <button
+                onClick={() => setBookingsPage(bookingsPage + 1)}
+                disabled={bookingsPage >= Math.ceil(bookingsTotal / bookingsLimit)}
+                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
           </section>
         )}
 
@@ -270,6 +342,23 @@ export default function AdminPanel(): JSX.Element {
                 </li>
               ))}
             </ul>
+            <div className="flex justify-between items-center mt-4">
+              <button
+                onClick={() => setRoadmapPage(Math.max(1, roadmapPage - 1))}
+                disabled={roadmapPage === 1}
+                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span>Page {roadmapPage} of {Math.ceil(roadmapTotal / roadmapLimit)}</span>
+              <button
+                onClick={() => setRoadmapPage(roadmapPage + 1)}
+                disabled={roadmapPage >= Math.ceil(roadmapTotal / roadmapLimit)}
+                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
           </section>
         )}
       </main>
