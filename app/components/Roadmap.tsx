@@ -32,7 +32,7 @@ export default function Roadmap() {
       setError(null);
 
       try {
-        const res = await fetch("http://51.20.43.58:8080/api/v1/roadmap");
+        const res = await fetch("https://api.bandu.uz/api/v1/roadmap");
         if (!res.ok) throw new Error(`Network response not ok: ${res.status}`);
 
         const data: Step[] = await res.json();
