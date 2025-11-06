@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import { useTheme } from "next-themes";
+import api from "../api/api"; // ✅ Import your axios instance
 
 type Task = {
   id: number;
@@ -32,11 +33,8 @@ export default function Roadmap() {
       setError(null);
 
       try {
-        const res = await fetch("https://api.bandu.uz/api/v1/roadmap");
-        if (!res.ok) throw new Error(`Network response not ok: ${res.status}`);
-
-        const data: Step[] = await res.json();
-        setSteps(data);
+        const res = await api.get<Step[]>("roadmap"); // ✅ Axios call
+        setSteps(res.data);
       } catch (err) {
         console.error(err);
         setError("Failed to load roadmap");
@@ -142,9 +140,7 @@ export default function Roadmap() {
                         <p
                           className={`text-sm mt-1 transition-colors duration-300 ${
                             isCompleted
-                              ? isDark
-                                ? "text-gray-500"
-                                : "text-gray-500"
+                              ? "text-gray-500"
                               : isActive
                               ? "text-yellow-400"
                               : isDark
@@ -199,10 +195,7 @@ export default function Roadmap() {
                       </h4>
                       <ul className="space-y-2">
                         {step.tasks.map((task) => (
-                          <li
-                            key={task.id}
-                            className="flex items-start gap-3"
-                          >
+                          <li key={task.id} className="flex items-start gap-3">
                             <div
                               className={`shrink-0 w-5 h-5 mt-0.5 rounded border transition-colors duration-300 ${
                                 task.completed
@@ -231,9 +224,7 @@ export default function Roadmap() {
                             <span
                               className={`text-sm transition-colors duration-300 ${
                                 task.completed
-                                  ? isDark
-                                    ? "text-gray-400 line-through"
-                                    : "text-gray-500 line-through"
+                                  ? "line-through text-gray-500"
                                   : isActive
                                   ? "text-white"
                                   : isDark
@@ -254,9 +245,7 @@ export default function Roadmap() {
                     <p
                       className={`mt-4 font-medium transition-colors duration-300 ${
                         isCompleted
-                          ? isDark
-                            ? "text-gray-400"
-                            : "text-gray-600"
+                          ? "text-gray-500"
                           : isActive
                           ? "text-yellow-300"
                           : isDark
@@ -273,14 +262,10 @@ export default function Roadmap() {
                     <div
                       className={`h-1 rounded-full transition-all duration-300 ${
                         isCompleted
-                          ? isDark
-                            ? "bg-gray-700"
-                            : "bg-gray-200"
+                          ? "bg-gray-300"
                           : isActive
-                          ? "bg-linear-to-r from-yellow-400 to-yellow-400 animate-pulse"
-                          : isDark
-                          ? "bg-gray-600"
-                          : "bg-gray-100"
+                          ? "bg-yellow-400 animate-pulse"
+                          : "bg-gray-200"
                       }`}
                       style={{
                         width: isCompleted || !isActive ? "100%" : "72%",
