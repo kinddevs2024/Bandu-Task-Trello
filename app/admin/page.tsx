@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, JSX } from "react";
-import api from "../api/api"; // ✅ Import your axios instance
+import api from "../api/api"; // ✅ axios instance
 
 type ViewType = "dashboard" | "users" | "places" | "bookings" | "roadmap";
 
@@ -21,6 +21,7 @@ export default function AdminPanel(): JSX.Element {
   const baseButtonClasses =
     "px-4 py-2 rounded-md border border-white/20 backdrop-blur-md shadow-sm transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-105 hover:shadow-md active:scale-95 bg-white/15 dark:bg-black/10 hover:bg-white/30 dark:hover:bg-black/30";
 
+  // ✅ Handle client-side only logic
   useEffect(() => {
     setIsClient(true);
     if (typeof window !== "undefined") {
@@ -29,50 +30,64 @@ export default function AdminPanel(): JSX.Element {
     }
   }, []);
 
-  // Fetch data when view changes
+  // ✅ Fetch data when view or token changes
   useEffect(() => {
     if (!token) return;
-    if (view === "users") fetchUsers();
-    if (view === "places") fetchPlaces();
-    if (view === "bookings") fetchBookings();
-    if (view === "roadmap") fetchRoadmap();
+    switch (view) {
+      case "users":
+        fetchUsers();
+        break;
+      case "places":
+        fetchPlaces();
+        break;
+      case "bookings":
+        fetchBookings();
+        break;
+      case "roadmap":
+        fetchRoadmap();
+        break;
+    }
   }, [view, token]);
 
   // ----------------- Data fetching -----------------
+  const getAuthHeader = () => ({
+    headers: { Authorization: token! }, // ✅ token already includes 'Bearer '
+  });
+
   const fetchUsers = async () => {
     try {
-      const res = await api.get("/users", { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.get("/users", getAuthHeader());
       setUsers(res.data || []);
     } catch (err) {
-      console.error(err);
+      console.error("Fetch users error:", err);
     }
   };
 
   const fetchPlaces = async () => {
     try {
-      const res = await api.get("/places", { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.get("/places", getAuthHeader());
       setPlaces(res.data || []);
     } catch (err) {
-      console.error(err);
+      console.error("Fetch places error:", err);
     }
   };
 
   const fetchBookings = async () => {
     try {
-      const res = await api.get("/bookings", { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.get("/bookings", getAuthHeader());
       setBookings(res.data || []);
     } catch (err) {
-      console.error(err);
+      console.error("Fetch bookings error:", err);
     }
   };
 
   const fetchRoadmap = async () => {
     try {
-      const res = await api.get("/roadmap", { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.get("/roadmap", getAuthHeader());
       setRoadmap(res.data || []);
-      console.log(res.data);
+      console.log("Roadmap data:", res.data);
     } catch (err) {
-      console.error(err);
+      console.error("Fetch roadmap error:", err);
     }
   };
 
@@ -80,18 +95,18 @@ export default function AdminPanel(): JSX.Element {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
     try {
       const res = await api.post("/auth/login", {
         phoneNumber: phone,
         password: password,
       });
 
-      const accessToken =
-        res.data?.accessToken || res.data?.token || res.data?.data?.accessToken;
+      const rawToken = res.data?.token;
 
-      if (accessToken) {
-        setToken(accessToken);
-        localStorage.setItem("token", accessToken);
+      if (rawToken) {
+        setToken(rawToken);
+        localStorage.setItem("token", rawToken);
       } else {
         setError("Login failed: Invalid response structure");
       }
@@ -102,6 +117,7 @@ export default function AdminPanel(): JSX.Element {
     }
   };
 
+  // ----------------- Logout -----------------
   const handleLogout = () => {
     localStorage.removeItem("token");
     setToken(null);
@@ -112,6 +128,7 @@ export default function AdminPanel(): JSX.Element {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
+  // ✅ Login screen
   if (!token) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
@@ -123,7 +140,9 @@ export default function AdminPanel(): JSX.Element {
             Admin Login
           </h2>
           <div className="mb-4">
-            <label className="block text-sm mb-2 text-gray-600 dark:text-gray-300">Phone Number</label>
+            <label className="block text-sm mb-2 text-gray-600 dark:text-gray-300">
+              Phone Number
+            </label>
             <input
               type="text"
               value={phone}
@@ -154,6 +173,7 @@ export default function AdminPanel(): JSX.Element {
     );
   }
 
+  // ✅ Main panel
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-6">
       <header className="fixed top-0 left-0 w-full z-50 bg-white/10 dark:bg-black/20 backdrop-blur-md shadow-md flex justify-between items-center px-10 py-4 mb-8">
@@ -174,7 +194,10 @@ export default function AdminPanel(): JSX.Element {
           <button onClick={() => setView("roadmap")} className={baseButtonClasses}>
             Roadmap
           </button>
-          <button onClick={handleLogout} className="px-4 py-2 bg-red-600 rounded-md text-white hover:bg-red-700">
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-600 rounded-md text-white hover:bg-red-700"
+          >
             Logout
           </button>
         </nav>
@@ -200,8 +223,8 @@ export default function AdminPanel(): JSX.Element {
                 {users.map((u) => (
                   <tr key={u.id} className="border-t border-gray-300 dark:border-gray-700">
                     <td className="p-2">{u.id}</td>
-                    <td className="p-2">{u.name}</td>
-                    <td className="p-2">{u.phone}</td>
+                    <td className="p-2">{u.firstName} {u.lastName}</td>
+                    <td className="p-2">{u.phoneNumber}</td>
                   </tr>
                 ))}
               </tbody>
@@ -249,7 +272,7 @@ export default function AdminPanel(): JSX.Element {
                 {bookings.map((b) => (
                   <tr key={b.id} className="border-t border-gray-300 dark:border-gray-700">
                     <td className="p-2">{b.id}</td>
-                    <td className="p-2">{b.user?.name}</td>
+                    <td className="p-2">{b.user?.firstName} {b.user?.lastName}</td>
                     <td className="p-2">{b.place?.name}</td>
                     <td className="p-2">{b.status}</td>
                   </tr>
@@ -264,7 +287,10 @@ export default function AdminPanel(): JSX.Element {
             <h2 className="text-xl font-semibold mb-4">Roadmap</h2>
             <ul className="space-y-2">
               {roadmap.map((r) => (
-                <li key={r.id} className="p-4 bg-white dark:bg-gray-800 shadow rounded-lg flex justify-between">
+                <li
+                  key={r.id}
+                  className="p-4 bg-white dark:bg-gray-800 shadow rounded-lg flex justify-between"
+                >
                   <span>{r.title}</span>
                   <span className="text-sm text-gray-500 dark:text-gray-400">{r.status}</span>
                 </li>

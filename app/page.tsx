@@ -4,10 +4,10 @@ import Roadmap from "./components/Roadmap";
 
 export default function Home() {
   return (
-    <div>
+    <>
       <Header />
       <WelcomeSection />
       <Roadmap />
-    </div>
+    </>
   );
 }
