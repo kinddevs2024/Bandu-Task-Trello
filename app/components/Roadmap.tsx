@@ -29,20 +29,16 @@ export default function Roadmap() {
 
   useEffect(() => {
     const fetchRoadmap = async () => {
-      setLoading(true);
-      setError(null);
-
       try {
-        const res = await api.get<Step[]>("roadmap"); // ✅ Axios call
+        const res = await api.get("/roadmap");
         setSteps(res.data);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load roadmap");
-      } finally {
+        setLoading(false);
+      } catch (error: any) {
+        console.error("Proxy error:", error.response?.status, error.message);
+        setError("Failed to fetch roadmap");
         setLoading(false);
       }
     };
-
     fetchRoadmap();
   }, []);
 
