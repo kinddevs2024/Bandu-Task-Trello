@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import { useTheme } from "next-themes";
-import api from "../api/api"; // ✅ Import your axios instance
 
 type Task = {
   id: number;
@@ -30,11 +29,15 @@ export default function Roadmap() {
   useEffect(() => {
     const fetchRoadmap = async () => {
       try {
-        const res = await api.get("/roadmap");
-        setSteps(res.data);
+        const res = await fetch("/api/roadmap");
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const data = await res.json();
+        setSteps(data);
         setLoading(false);
       } catch (error: any) {
-        console.error("Proxy error:", error.response?.status, error.message);
+        console.error("Fetch error:", error.message);
         setError("Failed to fetch roadmap");
         setLoading(false);
       }

@@ -1,0 +1,150 @@
+[
+  {
+    "id": 1,
+    "title": "MVP (0–2 oy)",
+    "description": "Minimal ishlaydigan mahsulot",
+    "result": "Ishlaydigan minimal versiya (MVP)",
+    "tasks": [
+      {
+        "id": 1,
+        "task": "Mobil ilova va admin panelni ishlab chiqish",
+        "completed": true
+      },
+      {
+        "id": 2,
+        "task": "Geo-lokatsiya va navbat logikasi",
+        "completed": false
+      },
+      {
+        "id": 3,
+        "task": "To‘lov tizimi sinov integratsiyasi (Click / Payme)",
+        "completed": false
+      },
+      {
+        "id": 4,
+        "task": "Telegram mini app test versiyasi",
+        "completed": false
+      },
+      {
+        "id": 5,
+        "task": "UI/UX dizayn va brend tayyorlash",
+        "completed": true
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "title": "Test va Feedback (3–5 oy)",
+    "description": "Pilot sinov va foydalanuvchi tajribasini tahlil qilish bosqichi",
+    "result": "Barqaror MVP va dastlabki foydalanuvchi bazasi (1 000+)",
+    "tasks": [
+      {
+        "id": 6,
+        "task": "10–15 joyda pilot test (barber, klinika, kafe)",
+        "completed": false
+      },
+      {
+        "id": 7,
+        "task": "Foydalanuvchi tajribasi tahlili va optimizatsiya",
+        "completed": false
+      },
+      {
+        "id": 8,
+        "task": "Barqarorlik, tezlik va xavfsizlikni yaxshilash",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "title": "Bozorga chiqish (6–9 oy)",
+    "description": "Mahsulotni real bozorda ishga tushirish bosqichi",
+    "result": "5 000+ foydalanuvchi, 100+ joy tizimda",
+    "tasks": [
+      {
+        "id": 9,
+        "task": "Promo web-sayt ishga tushirish",
+        "completed": false
+      },
+      {
+        "id": 10,
+        "task": "Brending va reklama (Instagram, Telegram, TikTok)",
+        "completed": false
+      },
+      {
+        "id": 11,
+        "task": "1–2 shaharda soft launch",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "title": "Monetizatsiya (10–15 oy)",
+    "description": "Daromad olish mexanizmlarini joriy etish bosqichi",
+    "result": "Oylik 3 000$+ daromad, 300+ joy faol",
+    "tasks": [
+      {
+        "id": 12,
+        "task": "Joylar uchun obuna tizimi (10–200$/oy)",
+        "completed": false
+      },
+      {
+        "id": 13,
+        "task": "1% komissiya modeli",
+        "completed": false
+      },
+      {
+        "id": 14,
+        "task": "Statistik panel va reklama joylari",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "title": "Investitsiya va Hamkorlik (16–20 oy)",
+    "description": "Loyihani kengaytirish uchun moliyaviy va strategik sheriklar topish bosqichi",
+    "result": "50 000$+ investitsiya, 2 strategik hamkor",
+    "tasks": [
+      {
+        "id": 15,
+        "task": "Pitch deck va moliyaviy prognozlar tayyorlash",
+        "completed": false
+      },
+      {
+        "id": 16,
+        "task": "IT Park va investorlar bilan uchrashuvlar",
+        "completed": false
+      },
+      {
+        "id": 17,
+        "task": "Yirik tarmoqlar bilan hamkorlik",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "title": "Kengayish (21–24 oy)",
+    "description": "AI asosida tavsiya tizimi va xalqaro miqyosda kengayish bosqichi",
+    "result": "100 000+ foydalanuvchi, 500+ joy faol, oylik 10 000$+ daromad",
+    "tasks": [
+      {
+        "id": 18,
+        "task": "Tavsiya tizimi (AI asosida)",
+        "completed": false
+      },
+      {
+        "id": 19,
+        "task": "Qo‘shni davlatlarga chiqish (Qozog‘iston, Qirg‘iziston)",
+        "completed": false
+      },
+      {
+        "id": 20,
+        "task": "Bandu Business panel (analitika uchun)",
+        "completed": false
+      }
+    ]
+  }
+]
