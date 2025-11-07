@@ -36,7 +36,7 @@ export default function AdminPanel(): JSX.Element {
   const [roadmapTotal, setRoadmapTotal] = useState(0);
 
   const baseButtonClasses =
-    "px-4 py-2 rounded-md border border-white/20 backdrop-blur-md shadow-sm transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-105 hover:shadow-md active:scale-95 bg-white/15 dark:bg-black/10 hover:bg-white/30 dark:hover:bg-black/30";
+    "px-4 py-2 rounded-md border border-white/20 backdrop-blur-md shadow-sm transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-105 hover:shadow-md active:scale-95 bg-white/15 dark:bg-black/10 hover:bg-white/30 dark:hover:bg-black/30";
 
   useEffect(() => {
     setIsClient(true);
@@ -195,7 +195,7 @@ export default function AdminPanel(): JSX.Element {
           <button onClick={() => setView("roadmap")} className={baseButtonClasses}>
             Roadmap
           </button>
-          <button onClick={handleLogout} className="px-4 py-2 bg-red-600 rounded-md text-white hover:bg-red-700">
+          <button onClick={handleLogout} className={`${baseButtonClasses} bg-red-500/20 hover:bg-red-500/30 text-red-500`}>
             Logout
           </button>
         </nav>
@@ -203,15 +203,18 @@ export default function AdminPanel(): JSX.Element {
 
       <main className="pt-24">
         {view === "dashboard" && (
-          <div className="text-gray-700 dark:text-gray-300">Welcome to the Admin Dashboard.</div>
+          <section className="rounded-2xl p-6 border border-gray-200 dark:border-gray-700 bg-white/30 dark:bg-black/20 backdrop-blur-md shadow-sm transition-all duration-300">
+            <h2 className="text-xl font-semibold mb-4">Dashboard</h2>
+            <div className="text-gray-700 dark:text-gray-300">Welcome to the Admin Dashboard.</div>
+          </section>
         )}
 
         {view === "users" && (
-          <section>
+          <section className="rounded-2xl p-6 border border-gray-200 dark:border-gray-700 bg-white/30 dark:bg-black/20 backdrop-blur-md shadow-sm transition-all duration-300">
             <h2 className="text-xl font-semibold mb-4">Users</h2>
-            <table className="w-full bg-white dark:bg-gray-800 shadow rounded-lg">
+            <table className="w-full bg-white/30 dark:bg-gray-800/50 backdrop-blur-md shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
               <thead>
-                <tr className="bg-gray-200 dark:bg-gray-700">
+                <tr className="bg-gray-200/50 dark:bg-gray-700/50">
                   <th className="p-2 text-left">ID</th>
                   <th className="p-2 text-left">Name</th>
                   <th className="p-2 text-left">Phone</th>
@@ -219,7 +222,7 @@ export default function AdminPanel(): JSX.Element {
               </thead>
               <tbody>
                 {users.map((u) => (
-                  <tr key={u.id} className="border-t border-gray-300 dark:border-gray-700">
+                  <tr key={u.id} className="border-t border-gray-300 dark:border-gray-700 hover:bg-gray-100/50 dark:hover:bg-gray-700/50 transition-colors duration-300">
                     <td className="p-2">{u.id}</td>
                     <td className="p-2">{u.name}</td>
                     <td className="p-2">{u.phone}</td>
@@ -231,7 +234,7 @@ export default function AdminPanel(): JSX.Element {
               <button
                 onClick={() => setUsersPage(Math.max(1, usersPage - 1))}
                 disabled={usersPage === 1}
-                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+                className={`${baseButtonClasses} bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 disabled:opacity-50`}
               >
                 Previous
               </button>
@@ -239,7 +242,7 @@ export default function AdminPanel(): JSX.Element {
               <button
                 onClick={() => setUsersPage(usersPage + 1)}
                 disabled={usersPage >= Math.ceil(usersTotal / usersLimit)}
-                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+                className={`${baseButtonClasses} bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 disabled:opacity-50`}
               >
                 Next
               </button>
@@ -248,11 +251,11 @@ export default function AdminPanel(): JSX.Element {
         )}
 
         {view === "places" && (
-          <section>
+          <section className="rounded-2xl p-6 border border-gray-200 dark:border-gray-700 bg-white/30 dark:bg-black/20 backdrop-blur-md shadow-sm transition-all duration-300">
             <h2 className="text-xl font-semibold mb-4">Places</h2>
-            <table className="w-full bg-white dark:bg-gray-800 shadow rounded-lg">
+            <table className="w-full bg-white/30 dark:bg-gray-800/50 backdrop-blur-md shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
               <thead>
-                <tr className="bg-gray-200 dark:bg-gray-700">
+                <tr className="bg-gray-200/50 dark:bg-gray-700/50">
                   <th className="p-2 text-left">ID</th>
                   <th className="p-2 text-left">Name</th>
                   <th className="p-2 text-left">Status</th>
@@ -260,7 +263,7 @@ export default function AdminPanel(): JSX.Element {
               </thead>
               <tbody>
                 {places.map((p) => (
-                  <tr key={p.id} className="border-t border-gray-300 dark:border-gray-700">
+                  <tr key={p.id} className="border-t border-gray-300 dark:border-gray-700 hover:bg-gray-100/50 dark:hover:bg-gray-700/50 transition-colors duration-300">
                     <td className="p-2">{p.id}</td>
                     <td className="p-2">{p.name}</td>
                     <td className="p-2">{p.status}</td>
@@ -272,7 +275,7 @@ export default function AdminPanel(): JSX.Element {
               <button
                 onClick={() => setPlacesPage(Math.max(1, placesPage - 1))}
                 disabled={placesPage === 1}
-                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+                className={`${baseButtonClasses} bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 disabled:opacity-50`}
               >
                 Previous
               </button>
@@ -280,7 +283,7 @@ export default function AdminPanel(): JSX.Element {
               <button
                 onClick={() => setPlacesPage(placesPage + 1)}
                 disabled={placesPage >= Math.ceil(placesTotal / placesLimit)}
-                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+                className={`${baseButtonClasses} bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 disabled:opacity-50`}
               >
                 Next
               </button>
@@ -289,11 +292,11 @@ export default function AdminPanel(): JSX.Element {
         )}
 
         {view === "bookings" && (
-          <section>
+          <section className="rounded-2xl p-6 border border-gray-200 dark:border-gray-700 bg-white/30 dark:bg-black/20 backdrop-blur-md shadow-sm transition-all duration-300">
             <h2 className="text-xl font-semibold mb-4">Bookings</h2>
-            <table className="w-full bg-white dark:bg-gray-800 shadow rounded-lg">
+            <table className="w-full bg-white/30 dark:bg-gray-800/50 backdrop-blur-md shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
               <thead>
-                <tr className="bg-gray-200 dark:bg-gray-700">
+                <tr className="bg-gray-200/50 dark:bg-gray-700/50">
                   <th className="p-2 text-left">ID</th>
                   <th className="p-2 text-left">User</th>
                   <th className="p-2 text-left">Place</th>
@@ -302,7 +305,7 @@ export default function AdminPanel(): JSX.Element {
               </thead>
               <tbody>
                 {bookings.map((b) => (
-                  <tr key={b.id} className="border-t border-gray-300 dark:border-gray-700">
+                  <tr key={b.id} className="border-t border-gray-300 dark:border-gray-700 hover:bg-gray-100/50 dark:hover:bg-gray-700/50 transition-colors duration-300">
                     <td className="p-2">{b.id}</td>
                     <td className="p-2">{b.user?.name}</td>
                     <td className="p-2">{b.place?.name}</td>
@@ -315,7 +318,7 @@ export default function AdminPanel(): JSX.Element {
               <button
                 onClick={() => setBookingsPage(Math.max(1, bookingsPage - 1))}
                 disabled={bookingsPage === 1}
-                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+                className={`${baseButtonClasses} bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 disabled:opacity-50`}
               >
                 Previous
               </button>
@@ -323,7 +326,7 @@ export default function AdminPanel(): JSX.Element {
               <button
                 onClick={() => setBookingsPage(bookingsPage + 1)}
                 disabled={bookingsPage >= Math.ceil(bookingsTotal / bookingsLimit)}
-                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+                className={`${baseButtonClasses} bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 disabled:opacity-50`}
               >
                 Next
               </button>
@@ -332,11 +335,11 @@ export default function AdminPanel(): JSX.Element {
         )}
 
         {view === "roadmap" && (
-          <section>
+          <section className="rounded-2xl p-6 border border-gray-200 dark:border-gray-700 bg-white/30 dark:bg-black/20 backdrop-blur-md shadow-sm transition-all duration-300">
             <h2 className="text-xl font-semibold mb-4">Roadmap</h2>
             <ul className="space-y-2">
               {roadmap.map((r) => (
-                <li key={r.id} className="p-4 bg-white dark:bg-gray-800 shadow rounded-lg flex justify-between">
+                <li key={r.id} className="p-4 bg-white/30 dark:bg-gray-800/50 backdrop-blur-md shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 flex justify-between hover:bg-gray-100/50 dark:hover:bg-gray-700/50 transition-colors duration-300">
                   <span>{r.title}</span>
                   <span className="text-sm text-gray-500 dark:text-gray-400">{r.status}</span>
                 </li>
@@ -346,7 +349,7 @@ export default function AdminPanel(): JSX.Element {
               <button
                 onClick={() => setRoadmapPage(Math.max(1, roadmapPage - 1))}
                 disabled={roadmapPage === 1}
-                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+                className={`${baseButtonClasses} bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 disabled:opacity-50`}
               >
                 Previous
               </button>
@@ -354,7 +357,7 @@ export default function AdminPanel(): JSX.Element {
               <button
                 onClick={() => setRoadmapPage(roadmapPage + 1)}
                 disabled={roadmapPage >= Math.ceil(roadmapTotal / roadmapLimit)}
-                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+                className={`${baseButtonClasses} bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 disabled:opacity-50`}
               >
                 Next
               </button>
