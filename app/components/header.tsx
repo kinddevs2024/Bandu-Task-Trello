@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Sun, Moon, Monitor, User, LogOut } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import logo from "../../public/logo_img.png";
+import logo_sm from "../../public/icon_logo.png";
 
 export default function Header() {
   const router = useRouter();
@@ -58,6 +59,7 @@ export default function Header() {
               } `}
             >
               <img src={logo.src} alt="Bandu Logo" className=" m-1 h-6 hidden sm:block" />
+              <img src={logo_sm.src} alt="Bandu Logo" className=" m-1 h-6 block sm:hidden" />
             </Link>
 
             
