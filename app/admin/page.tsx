@@ -2,14 +2,12 @@
 
 import React, { useState, useEffect, JSX } from "react";
 import api from "../api/api"; // ✅ Import your axios instance
+import LoginForm from "../components/LoginForm";
 
 type ViewType = "dashboard" | "users" | "places" | "bookings" | "roadmap";
 
 export default function AdminPanel(): JSX.Element {
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
   const [token, setToken] = useState<string | null>(null);
-  const [error, setError] = useState("");
   const [isClient, setIsClient] = useState(false);
   const [view, setView] = useState<ViewType>("dashboard");
 
@@ -97,31 +95,6 @@ export default function AdminPanel(): JSX.Element {
     }
   };
 
-  // ----------------- Login -----------------
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    try {
-      const res = await api.post("/auth/login", {
-        phoneNumber: phone,
-        password: password,
-      });
-
-      const accessToken =
-        res.data?.accessToken || res.data?.token || res.data?.data?.accessToken;
-
-      if (accessToken) {
-        setToken(accessToken);
-        localStorage.setItem("token", accessToken);
-      } else {
-        setError("Login failed: Invalid response structure");
-      }
-    } catch (err: any) {
-      console.error("Login error:", err.response?.data || err.message);
-      const message = err.response?.data?.message || "Invalid credentials or server error";
-      setError(message);
-    }
-  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -136,41 +109,10 @@ export default function AdminPanel(): JSX.Element {
   if (!token) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-        <form
-          onSubmit={handleLogin}
-          className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md w-full max-w-sm"
-        >
-          <h2 className="text-2xl font-bold text-center mb-6 text-gray-800 dark:text-gray-100">
-            Admin Login
-          </h2>
-          <div className="mb-4">
-            <label className="block text-sm mb-2 text-gray-600 dark:text-gray-300">Phone Number</label>
-            <input
-              type="text"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="Enter phone number"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
-            />
-          </div>
-          <div className="mb-6">
-            <label className="block text-sm mb-2 text-gray-600 dark:text-gray-300">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
-            />
-          </div>
-          {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
-          <button
-            type="submit"
-            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-semibold transition-all duration-300"
-          >
-            Login
-          </button>
-        </form>
+        <LoginForm onLoginSuccess={(newToken) => {
+          setToken(newToken);
+          localStorage.setItem("token", newToken);
+        }} />
       </div>
     );
   }

@@ -8,10 +8,9 @@ interface OTPVerificationProps {
   phoneNumber: string;
   onSwitchToLogin: () => void;
   onSwitchToRegister: () => void;
-  onSuccess?: () => void;
 }
 
-export default function OTPVerification({ phoneNumber, onSwitchToLogin, onSwitchToRegister, onSuccess }: OTPVerificationProps) {
+export default function OTPVerification({ phoneNumber, onSwitchToLogin, onSwitchToRegister }: OTPVerificationProps) {
   const [otpCode, setOtpCode] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -39,7 +38,6 @@ export default function OTPVerification({ phoneNumber, onSwitchToLogin, onSwitch
       const { token, userRes } = response.data;
       if (token && userRes) {
         login(token, userRes);
-        onSuccess?.();
       } else {
         setError("Verification failed: Invalid response structure");
       }
@@ -77,7 +75,10 @@ export default function OTPVerification({ phoneNumber, onSwitchToLogin, onSwitch
   };
 
   return (
-    <>
+    <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md w-full max-w-sm">
+      <h2 className="text-2xl font-bold text-center mb-6 text-gray-800 dark:text-gray-100">
+        Tasdiqlash
+      </h2>
       <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-6">
         {phoneNumber} raqamiga yuborilgan 6 xonali kodni kiriting
       </p>
@@ -123,6 +124,6 @@ export default function OTPVerification({ phoneNumber, onSwitchToLogin, onSwitch
           Orqaga qaytish
         </button>
       </div>
-    </>
+    </div>
   );
 }

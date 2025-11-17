@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Sun, Moon, Monitor, User, LogOut } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import AuthModal from "./AuthModal";
+import logo from "../../public/logo_img.png";
 
 export default function Header() {
   const { theme, setTheme } = useTheme();
@@ -22,10 +23,10 @@ export default function Header() {
 
   if (!mounted) return null;
 
-  const isDark = theme === "dark";
-
   const baseButtonClasses =
     "p-2 rounded-full border border-white/20 backdrop-blur-md shadow-sm transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-105 hover:shadow-md active:scale-95";
+  const baseButtonClassesbandu =
+    " p-[4px] pr-[6px] pl-[6px] rounded-full border border-white/20 backdrop-blur-md shadow-sm transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]  active:scale-95";
 
   const getThemeButtonClasses = (btnTheme: string) =>
     `${baseButtonClasses} ${theme === btnTheme
@@ -36,6 +37,7 @@ export default function Header() {
   const handleLogout = () => {
     logout();
   };
+  const isDark = theme === "dark";
 
   return (
     <>
@@ -44,51 +46,16 @@ export default function Header() {
           ${animate ? "translate-y-0 opacity-100" : "-translate-y-24 opacity-0"}`}
       >
         <div className="max-w-6xl mx-auto flex items-center justify-between px-14 py-3">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center justify-center text-center">
             {/* Logo/Home link */}
-            <Link href="/" className="text-xl font-bold">
-              <span 
-                className={`interactive-gradient-${isDark ? 'dark' : 'light'} relative inline-block`}
-                style={{
-                  backgroundImage: `linear-gradient(90deg, #ffd54a, #ff702d, ${isDark ? '#ffffff' : '#000000'})`,
-                }}
-              >
-                Bandu
-                <style jsx>{`
-                  .interactive-gradient-light,
-                  .interactive-gradient-dark {
-                    background-size: 200% 200%;
-                    -webkit-background-clip: text;
-                    background-clip: text;
-                    color: transparent;
-                    animation: hueShift 8s linear infinite;
-                    transition: transform 0.12s ease, background-image 0.3s ease;
-                  }
-
-                  @keyframes hueShift {
-                    0% {
-                      background-position: 0% 50%;
-                    }
-                    50% {
-                      background-position: 100% 50%;
-                    }
-                    100% {
-                      background-position: 0% 50%;
-                    }
-                  }
-                `}</style>
-              </span>
+            <Link href="/"
+                  className={`text-2xl  font-medium  leading-[1.3] transition-colors duration-300 ${isDark ? "text-white" : "text-gray-900"
+              } `}
+            >
+              <img src={logo.src} alt="Bandu Logo" className=" m-1 h-6 hidden sm:block" />
             </Link>
 
-            {/* Admin link for authenticated users */}
-            {isAuthenticated && (
-              <Link
-                href="/admin"
-                className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors"
-              >
-                Admin
-              </Link>
-            )}
+            
           </div>
 
           <div className="flex items-center gap-3">

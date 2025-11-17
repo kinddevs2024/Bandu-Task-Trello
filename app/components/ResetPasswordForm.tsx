@@ -59,7 +59,11 @@ export default function ResetPasswordForm({ onSwitchToLogin }: ResetPasswordForm
   };
 
   return (
-    <>
+    <div className="bg-white/10 dark:bg-black/20 backdrop-blur-md p-8 rounded-2xl shadow-sm border border-white/20 w-full max-w-sm transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]">
+      <h2 className="text-2xl font-bold text-center mb-6 text-gray-800 dark:text-gray-100">
+        Parolni tiklash
+      </h2>
+
       {step === "request" ? (
         <form onSubmit={handleRequestReset}>
           <div className="mb-6">
@@ -71,7 +75,7 @@ export default function ResetPasswordForm({ onSwitchToLogin }: ResetPasswordForm
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               placeholder="+998901234567"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full px-4 py-2 border border-white/20 rounded-md bg-white/10 dark:bg-black/10 backdrop-blur-md focus:ring-2 focus:ring-blue-500 outline-none transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] text-gray-800 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               required
               pattern="^(\+998|998)[0-9]{9}$"
             />
@@ -80,7 +84,7 @@ export default function ResetPasswordForm({ onSwitchToLogin }: ResetPasswordForm
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-md font-semibold transition-all duration-300"
+            className="w-full py-2 bg-blue-500/20 hover:bg-blue-500/30 disabled:opacity-50 text-blue-500 rounded-md font-semibold transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-105 hover:shadow-md active:scale-95"
           >
             {isLoading ? "Yuborilmoqda..." : "Kod yuborish"}
           </button>
@@ -96,7 +100,7 @@ export default function ResetPasswordForm({ onSwitchToLogin }: ResetPasswordForm
               value={otpCode}
               onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
               placeholder="123456"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 outline-none text-center text-lg tracking-widest"
+              className="w-full px-4 py-2 border border-white/20 rounded-md bg-white/10 dark:bg-black/10 backdrop-blur-md focus:ring-2 focus:ring-blue-500 outline-none text-center text-lg tracking-widest transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] text-gray-800 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               required
               maxLength={6}
               pattern="[0-9]{6}"
@@ -111,7 +115,7 @@ export default function ResetPasswordForm({ onSwitchToLogin }: ResetPasswordForm
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Yangi parol"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full px-4 py-2 border border-white/20 rounded-md bg-white/10 dark:bg-black/10 backdrop-blur-md focus:ring-2 focus:ring-blue-500 outline-none transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] text-gray-800 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               required
               minLength={6}
             />
@@ -120,7 +124,7 @@ export default function ResetPasswordForm({ onSwitchToLogin }: ResetPasswordForm
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-md font-semibold transition-all duration-300"
+            className="w-full py-2 bg-green-500/20 hover:bg-green-500/30 disabled:opacity-50 text-green-500 rounded-md font-semibold transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-105 hover:shadow-md active:scale-95"
           >
             {isLoading ? "Tiklanmoqda..." : "Parolni tiklash"}
           </button>
@@ -135,6 +139,6 @@ export default function ResetPasswordForm({ onSwitchToLogin }: ResetPasswordForm
           Kirishga qaytish
         </button>
       </div>
-    </>
+    </div>
   );
 }

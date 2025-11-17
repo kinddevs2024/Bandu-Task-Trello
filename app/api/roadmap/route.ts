@@ -10,26 +10,28 @@ export async function GET() {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    if (response.ok) {
+      const data = await response.json();
+
+      // Add isCompleted to each step based on all tasks completed
+      const processedData = data.map((step: any) => ({
+        ...step,
+        isCompleted: step.tasks ? step.tasks.every((task: any) => task.completed) : false,
+      }));
+
+      return NextResponse.json(processedData);
     }
-
-    const data = await response.json();
-
-    // Add isCompleted to each step based on all tasks completed
-    const processedData = data.map((step: any) => ({
-      ...step,
-      isCompleted: step.tasks ? step.tasks.every((task: any) => task.completed) : false,
-    }));
-
-    return NextResponse.json(processedData);
+    // If API returns non-ok status (e.g., 404), fall through to local data
   } catch (error) {
-    console.error('Error fetching roadmap:', error);
-    // Fallback to local roadmap.json data, processed the same way
-    const processedData = roadmapData.map((step: any) => ({
-      ...step,
-      isCompleted: step.tasks ? step.tasks.every((task: any) => task.completed) : false,
-    }));
-    return NextResponse.json(processedData);
+    // Only log unexpected errors (network errors, etc.)
+    // 404s and other expected API failures are handled silently
+    console.error('Unexpected error fetching roadmap:', error);
   }
+  
+  // Fallback to local roadmap.json data, processed the same way
+  const processedData = roadmapData.map((step: any) => ({
+    ...step,
+    isCompleted: step.tasks ? step.tasks.every((task: any) => task.completed) : false,
+  }));
+  return NextResponse.json(processedData);
 }

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import { useTheme } from "next-themes";
+import api from "../api/api"; // ✅ Import your axios instance
 
 type Task = {
   id: number;
@@ -114,7 +115,7 @@ export default function Roadmap() {
                               ? "bg-gray-800 text-gray-400"
                               : "bg-gray-200 text-gray-500"
                             : isActive
-                            ? "bg-gradient-to-br from-yellow-500 to-orange-500 text-white animate-pulse"
+                            ? "bg-linear-to-br from-yellow-500 to-orange-500 text-white animate-pulse"
                             : isDark
                             ? "bg-gray-700 text-gray-200 border border-gray-600"
                             : "bg-white text-gray-800 border border-gray-100"
@@ -224,10 +225,6 @@ export default function Roadmap() {
                               className={`text-sm transition-colors duration-300 ${
                                 task.completed
                                   ? "line-through text-gray-500"
-                                  : isActive
-                                  ? isDark
-                                    ? "text-white"
-                                    : "text-gray-900"
                                   : isDark
                                   ? "text-gray-300"
                                   : "text-gray-600"
