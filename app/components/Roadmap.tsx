@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useTheme } from "next-themes";
 import api from "../api/api"; // ✅ Import your axios instance
+import { Analytics } from "@vercel/analytics/next";
 
 type Task = {
   id: number;
@@ -61,6 +62,7 @@ export default function Roadmap() {
         isDark ? "bg-black" : "bg-gray-100"
       }`}
     >
+      <Analytics/>
       <div className="max-w-5xl mx-auto px-4">
         <h2
           className={`text-3xl sm:text-4xl font-bold text-center mb-8 transition-colors duration-300 ${
@@ -87,26 +89,26 @@ export default function Roadmap() {
 
               if (isCompleted) {
                 containerClass += isDark
-                  ? " bg-black/20 border-gray-700 text-gray-300 shadow-sm"
-                  : " bg-white/30 border-gray-200 text-gray-600 shadow-sm";
+                  ? " bg-black/20 border-gray-700 text-gray-300 shadow-[0_8px_25px_rgba(0,0,0,0.3),0_4px_10px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_35px_rgba(0,0,0,0.4),0_6px_15px_rgba(0,0,0,0.3)]"
+                  : " bg-white/30 border-gray-200 text-gray-600 shadow-[0_8px_25px_rgba(0,0,0,0.15),0_4px_10px_rgba(0,0,0,0.1)] hover:shadow-[0_12px_35px_rgba(0,0,0,0.2),0_6px_15px_rgba(0,0,0,0.15)]";
               } else if (isActive) {
                 containerClass += isDark
-                  ? " bg-blue-900/30 border-yellow-400 shadow-[0_10px_30px_rgba(59,130,246,0.2)] ring-1 ring-yellow-600"
-                  : " bg-white/40 border-yellow-300 shadow-[0_10px_30px_rgba(59,130,246,0.08)] ring-1 ring-yellow-300";
+                  ? " bg-blue-900/30 border-yellow-400 shadow-[0_15px_40px_rgba(59,130,246,0.4),0_8px_20px_rgba(234,179,8,0.3),0_4px_10px_rgba(59,130,246,0.2)] ring-1 ring-yellow-600 hover:shadow-[0_20px_55px_rgba(59,130,246,0.5),0_10px_25px_rgba(234,179,8,0.4),0_5px_15px_rgba(59,130,246,0.3)]"
+                  : " bg-white/40 border-yellow-300 shadow-[0_15px_40px_rgba(59,130,246,0.15),0_8px_20px_rgba(234,179,8,0.2),0_4px_10px_rgba(59,130,246,0.1)] ring-1 ring-yellow-300 hover:shadow-[0_20px_55px_rgba(59,130,246,0.2),0_10px_25px_rgba(234,179,8,0.15),0_5px_15px_rgba(59,130,246,0.2)]";
               } else if (isFuture) {
                 containerClass += isDark
-                  ? " bg-gray-800/20 border-gray-700 text-gray-400"
-                  : " bg-gray-50/50 border-gray-100 text-gray-500";
-              } else {
+                ? " bg-black/20 border-gray-700 text-gray-300 shadow-[0_8px_25px_rgba(0,0,0,0.3),0_4px_10px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_35px_rgba(0,0,0,0.4),0_6px_15px_rgba(0,0,0,0.3)]"
+                : " bg-white/30 border-gray-200 text-gray-600 shadow-[0_8px_25px_rgba(0,0,0,0.15),0_4px_10px_rgba(0,0,0,0.1)] hover:shadow-[0_12px_35px_rgba(0,0,0,0.2),0_6px_15px_rgba(0,0,0,0.15)]";
+            } else {
                 containerClass += isDark
-                  ? " bg-gray-900/20 border-gray-700 text-gray-200"
-                  : " bg-white/30 border-gray-200 text-gray-700";
-              }
+                ? " bg-blue-900/30 border-yellow-400 shadow-[0_15px_40px_rgba(59,130,246,0.4),0_8px_20px_rgba(234,179,8,0.3),0_4px_10px_rgba(59,130,246,0.2)] ring-1 ring-yellow-600 hover:shadow-[0_20px_55px_rgba(59,130,246,0.5),0_10px_25px_rgba(234,179,8,0.4),0_5px_15px_rgba(59,130,246,0.3)]"
+                : " bg-white/40 border-yellow-300 shadow-[0_15px_40px_rgba(59,130,246,0.15),0_8px_20px_rgba(234,179,8,0.2),0_4px_10px_rgba(59,130,246,0.1)] ring-1 ring-yellow-300 hover:shadow-[0_20px_55px_rgba(59,130,246,0.2),0_10px_25px_rgba(234,179,8,0.15),0_5px_15px_rgba(59,130,246,0.2)]";
+            }
 
               return (
                 <div key={step.id} className={containerClass}>
                   {/* Header */}
-                  <div className="flex items-center justify-between">
+                  <div className=" flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div
                         className={`flex items-center justify-center w-11 h-11 rounded-lg font-semibold text-sm shadow-sm transition-colors duration-300 ${

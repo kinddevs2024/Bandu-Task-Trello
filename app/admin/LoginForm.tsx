@@ -1,21 +1,25 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import api from "../api/api";
+import { Analytics } from "@vercel/analytics/next";
 
-interface RegisterFormProps {
-  onSwitchToLogin: () => void;
-  onSwitchToVerify: (phoneNumber: string) => void;
+interface LoginFormProps {
+  onSwitchToRegister?: () => void;
+  onSwitchToResetPassword?: () => void;
+  onLoginSuccess?: (token: string) => void;
 }
 
-export default function RegisterForm({ onSwitchToLogin, onSwitchToVerify }: RegisterFormProps) {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+export default function LoginForm({ onSwitchToRegister, onSwitchToResetPassword, onLoginSuccess }: LoginFormProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  
+  // Use useContext directly to check if AuthContext is available
+  const authContext = useContext(AuthContext);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,23 +27,49 @@ export default function RegisterForm({ onSwitchToLogin, onSwitchToVerify }: Regi
     setIsLoading(true);
 
     try {
-      const response = await api.post("/auth/register", {
-        firstName,
-        lastName,
+      const response = await api.post("/auth/login", {
         phoneNumber,
         password,
       });
 
-      // API returns OTP code as string
-      const otpCode = response.data;
-      if (otpCode) {
-        onSwitchToVerify(phoneNumber);
+      const { token, userRes } = response.data;
+      if (token) {
+        // Save token to localStorage immediately
+        localStorage.setItem('token', token);
+        
+        // Save user data if available
+        if (userRes) {
+          localStorage.setItem('user', JSON.stringify(userRes));
+        }
+        
+        // Use auth context if available
+        if (authContext && userRes) {
+          authContext.login(token, userRes);
+        } else if (authContext) {
+          // If no userRes, just set the token
+          authContext.login(token, {
+            id: 0,
+            firstName: '',
+            lastName: '',
+            phoneNumber: phoneNumber,
+            visibility: false,
+            roles: []
+          });
+        }
+        
+        // Call onLoginSuccess callback if provided
+        if (onLoginSuccess) {
+          // Wait a bit to ensure localStorage is set
+          setTimeout(() => {
+            onLoginSuccess(token);
+          }, 100);
+        }
       } else {
-        setError("Registration failed: Invalid response");
+        setError("Login failed: Invalid response structure");
       }
     } catch (err: any) {
-      console.error("Registration error:", err.response?.data || err.message);
-      const message = err.response?.data?.message || "Registration failed";
+      console.error("Login error:", err.response?.data || err.message);
+      const message = err.response?.data?.message || "Invalid credentials or server error";
       setError(message);
     } finally {
       setIsLoading(false);
@@ -48,67 +78,28 @@ export default function RegisterForm({ onSwitchToLogin, onSwitchToVerify }: Regi
 
   return (
     <div className="relative w-full max-w-md">
+       <Analytics/>
       {/* Glowing background effect */}
-      <div className="absolute -inset-1 bg-gradient-to-r from-green-500/20 via-blue-500/20 to-purple-500/20 dark:from-green-500/30 dark:via-blue-500/30 dark:to-purple-500/30 rounded-3xl blur-xl opacity-50 dark:opacity-30 animate-pulse"></div>
+      <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 dark:from-blue-500/30 dark:via-purple-500/30 dark:to-pink-500/30 rounded-3xl blur-xl opacity-50 dark:opacity-30 animate-pulse"></div>
       
       {/* Main form container */}
       <div className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/50 w-full transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-3xl">
         {/* Header with icon */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 dark:from-green-600 dark:to-emerald-600 mb-4 shadow-lg">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 mb-4 shadow-lg">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
-          <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400 bg-clip-text text-transparent">
-            Ro'yxatdan o'tish
+          <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+            Kirish
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Yangi hisob yarating
+            Hisobingizga kiring
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* First Name Input */}
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-              Ism
-            </label>
-            <input
-              type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              placeholder="Ismingiz"
-              className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 outline-none transition-all duration-300 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 hover:border-gray-300 dark:hover:border-gray-600"
-              required
-              minLength={2}
-              maxLength={50}
-            />
-          </div>
-
-          {/* Last Name Input */}
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-              Familiya
-            </label>
-            <input
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              placeholder="Familiyangiz"
-              className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 outline-none transition-all duration-300 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 hover:border-gray-300 dark:hover:border-gray-600"
-              required
-              minLength={2}
-              maxLength={50}
-            />
-          </div>
-
           {/* Phone Number Input */}
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -145,10 +136,9 @@ export default function RegisterForm({ onSwitchToLogin, onSwitchToVerify }: Regi
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Parol yarating"
+                placeholder="Parolingizni kiriting"
                 className="w-full px-4 pr-12 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 outline-none transition-all duration-300 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 hover:border-gray-300 dark:hover:border-gray-600"
                 required
-                minLength={6}
               />
               <button
                 type="button"
@@ -172,7 +162,7 @@ export default function RegisterForm({ onSwitchToLogin, onSwitchToVerify }: Regi
           {/* Error Message */}
           {error && (
             <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 flex items-center gap-2 animate-shake">
-              <svg className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <p className="text-sm text-red-600 dark:text-red-400 text-center font-medium flex-1">
@@ -185,7 +175,7 @@ export default function RegisterForm({ onSwitchToLogin, onSwitchToVerify }: Regi
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-500 dark:to-emerald-500 hover:from-green-700 hover:to-emerald-700 dark:hover:from-green-600 dark:hover:to-emerald-600 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[1.02] active:scale-[0.98] transform relative overflow-hidden group"
+            className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 hover:from-blue-700 hover:to-purple-700 dark:hover:from-blue-600 dark:hover:to-purple-600 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[1.02] active:scale-[0.98] transform relative overflow-hidden group"
           >
             <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></span>
             {isLoading ? (
@@ -194,33 +184,50 @@ export default function RegisterForm({ onSwitchToLogin, onSwitchToVerify }: Regi
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Ro'yxatdan o'tilmoqda...
+                Kirilmoqda...
               </span>
             ) : (
               <span className="flex items-center justify-center gap-2 relative z-10">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                 </svg>
-                Ro'yxatdan o'tish
+                Kirish
               </span>
             )}
           </button>
         </form>
 
-        {/* Footer Link */}
-        <div className="mt-6 text-center pt-2 border-t border-gray-200 dark:border-gray-700">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Hisobingiz bormi?{" "}
-            <button
-              onClick={onSwitchToLogin}
-              className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200 underline-offset-4 hover:underline inline-flex items-center gap-1"
-            >
-              Kirish
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </button>
-          </p>
+        {/* Footer Links */}
+        <div className="mt-6 space-y-3">
+          {onSwitchToResetPassword && (
+            <div className="text-center">
+              <button
+                onClick={onSwitchToResetPassword}
+                className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200 underline-offset-4 hover:underline flex items-center justify-center gap-1 mx-auto"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Parolni unutdingizmi?
+              </button>
+            </div>
+          )}
+          {onSwitchToRegister && (
+            <div className="text-center pt-2 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Hisobingiz yo'qmi?{" "}
+                <button
+                  onClick={onSwitchToRegister}
+                  className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200 underline-offset-4 hover:underline inline-flex items-center gap-1"
+                >
+                  Ro'yxatdan o'ting
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </button>
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

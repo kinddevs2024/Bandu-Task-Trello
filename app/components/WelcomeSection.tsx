@@ -4,6 +4,7 @@ import Image from "next/image";
 import banduImg from "../../public/welcome.png";
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
+import { Analytics } from "@vercel/analytics/next"
 
 export default function WelcomeSection() {
   const { theme } = useTheme();
@@ -36,6 +37,7 @@ export default function WelcomeSection() {
         isDark ? "bg-black" : "bg-gray-100"
       }`}
     >
+       <Analytics/>
       {/* Main background blur */}
       <span
         className={`absolute -top-52 -left-52 w-[600px] h-[600px] rounded-full blur-[60px] -z-10 transition-colors duration-300 ${

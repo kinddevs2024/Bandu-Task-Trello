@@ -3,7 +3,7 @@ import roadmapData from './roadmap.json';
 
 export async function GET() {
   try {
-    const response = await fetch('https://api.bandu.uz/api/v1/roadmap', {
+    const response = await fetch('https://api.zayrx.uz/api/v1/roadmap', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

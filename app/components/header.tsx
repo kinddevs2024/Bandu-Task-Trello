@@ -3,17 +3,17 @@
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Sun, Moon, Monitor, User, LogOut } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import AuthModal from "./AuthModal";
 import logo from "../../public/logo_img.png";
 
 export default function Header() {
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { user, isAuthenticated, logout } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [animate, setAnimate] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -36,6 +36,11 @@ export default function Header() {
 
   const handleLogout = () => {
     logout();
+    router.push("/");
+  };
+
+  const handleLogin = () => {
+    router.push("/login");
   };
   const isDark = theme === "dark";
 
@@ -45,7 +50,7 @@ export default function Header() {
         className={`fixed top-0 left-0 w-full z-50 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]
           ${animate ? "translate-y-0 opacity-100" : "-translate-y-24 opacity-0"}`}
       >
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-14 py-3">
+        <div className=" backdrop-blur-sm max-w-6xl mx-auto flex items-center justify-between px-14 py-3">
           <div className="flex items-center justify-center text-center">
             {/* Logo/Home link */}
             <Link href="/"
@@ -96,7 +101,7 @@ export default function Header() {
               </div>
             ) : (
               <button
-                onClick={() => setShowAuthModal(true)}
+                onClick={handleLogin}
                 className={`${baseButtonClasses} bg-blue-500/20 hover:bg-blue-500/30`}
               >
                 <User className="w-4 h-4 text-blue-500" />
@@ -105,11 +110,6 @@ export default function Header() {
           </div>
         </div>
       </header>
-
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-      />
     </>
   );
 }
