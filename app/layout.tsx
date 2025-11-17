@@ -2,6 +2,7 @@ import "./globals.css";
 import { Inter, Open_Sans } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "./context/AuthContext";
+import type { Metadata } from "next";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -12,6 +13,12 @@ const openSans = Open_Sans({
   subsets: ["latin"],
   variable: "--font-open-sans",
 });
+
+export const metadata: Metadata = {
+  icons: {
+    icon: "/icon_logo.png",
+  },
+};
 
 export default function RootLayout({
   children,
