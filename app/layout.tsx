@@ -15,6 +15,7 @@ const openSans = Open_Sans({
 });
 
 export const metadata: Metadata = {
+  title: "Bandu",
   icons: {
     icon: "/icon_logo.png",
   },
