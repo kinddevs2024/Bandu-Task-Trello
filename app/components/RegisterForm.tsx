@@ -46,10 +46,7 @@ export default function RegisterForm({ onSwitchToLogin, onSwitchToVerify }: Regi
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md w-full max-w-sm">
-      <h2 className="text-2xl font-bold text-center mb-6 text-gray-800 dark:text-gray-100">
-        Ro'yxatdan o'tish
-      </h2>
+    <>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block text-sm mb-2 text-gray-600 dark:text-gray-300">
@@ -126,6 +123,6 @@ export default function RegisterForm({ onSwitchToLogin, onSwitchToVerify }: Regi
           Hisobingiz bormi? Kirish
         </button>
       </div>
-    </div>
+    </>
   );
 }

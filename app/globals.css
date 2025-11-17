@@ -40,6 +40,58 @@ html, body, #__next {
   z-index: 1;
 }
 
+/* Blur backdrop for login modal */
+#modal-backdrop-blur {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Hide Material Tailwind's default backdrop if it exists */
+body > div[role="presentation"] > div:first-child {
+  display: none !important;
+}
+
+/* Hide Material Tailwind's default backdrop overlay */
+body > div[role="presentation"] {
+  background-color: transparent !important;
+}
+
+/* Ensure Material Tailwind Dialog is centered */
+[role="dialog"],
+div[role="presentation"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Center the dialog content box */
+[role="dialog"] > div {
+  margin: auto !important;
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+}
+
+/* Ensure Dialog container centers properly */
+div[role="presentation"] > div {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 100vh !important;
+  width: 100% !important;
+}
+
 
 
 

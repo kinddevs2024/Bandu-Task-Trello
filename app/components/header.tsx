@@ -22,6 +22,8 @@ export default function Header() {
 
   if (!mounted) return null;
 
+  const isDark = theme === "dark";
+
   const baseButtonClasses =
     "p-2 rounded-full border border-white/20 backdrop-blur-md shadow-sm transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-105 hover:shadow-md active:scale-95";
 
@@ -44,8 +46,38 @@ export default function Header() {
         <div className="max-w-6xl mx-auto flex items-center justify-between px-14 py-3">
           <div className="flex items-center gap-4">
             {/* Logo/Home link */}
-            <Link href="/" className="text-xl font-bold text-gray-800 dark:text-white">
-              Bandu
+            <Link href="/" className="text-xl font-bold">
+              <span 
+                className={`interactive-gradient-${isDark ? 'dark' : 'light'} relative inline-block`}
+                style={{
+                  backgroundImage: `linear-gradient(90deg, #ffd54a, #ff702d, ${isDark ? '#ffffff' : '#000000'})`,
+                }}
+              >
+                Bandu
+                <style jsx>{`
+                  .interactive-gradient-light,
+                  .interactive-gradient-dark {
+                    background-size: 200% 200%;
+                    -webkit-background-clip: text;
+                    background-clip: text;
+                    color: transparent;
+                    animation: hueShift 8s linear infinite;
+                    transition: transform 0.12s ease, background-image 0.3s ease;
+                  }
+
+                  @keyframes hueShift {
+                    0% {
+                      background-position: 0% 50%;
+                    }
+                    50% {
+                      background-position: 100% 50%;
+                    }
+                    100% {
+                      background-position: 0% 50%;
+                    }
+                  }
+                `}</style>
+              </span>
             </Link>
 
             {/* Admin link for authenticated users */}

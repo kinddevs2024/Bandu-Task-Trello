@@ -114,7 +114,7 @@ export default function Roadmap() {
                               ? "bg-gray-800 text-gray-400"
                               : "bg-gray-200 text-gray-500"
                             : isActive
-                            ? "bg-linear-to-br from-yellow-500 to-orange-500 text-white animate-pulse"
+                            ? "bg-gradient-to-br from-yellow-500 to-orange-500 text-white animate-pulse"
                             : isDark
                             ? "bg-gray-700 text-gray-200 border border-gray-600"
                             : "bg-white text-gray-800 border border-gray-100"
@@ -225,7 +225,9 @@ export default function Roadmap() {
                                 task.completed
                                   ? "line-through text-gray-500"
                                   : isActive
-                                  ? "text-white"
+                                  ? isDark
+                                    ? "text-white"
+                                    : "text-gray-900"
                                   : isDark
                                   ? "text-gray-300"
                                   : "text-gray-600"

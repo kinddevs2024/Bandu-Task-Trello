@@ -7,9 +7,10 @@ import api from "../api/api";
 interface LoginFormProps {
   onSwitchToRegister: () => void;
   onSwitchToResetPassword: () => void;
+  onSuccess?: () => void;
 }
 
-export default function LoginForm({ onSwitchToRegister, onSwitchToResetPassword }: LoginFormProps) {
+export default function LoginForm({ onSwitchToRegister, onSwitchToResetPassword, onSuccess }: LoginFormProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -30,6 +31,7 @@ export default function LoginForm({ onSwitchToRegister, onSwitchToResetPassword 
       const { token, userRes } = response.data;
       if (token && userRes) {
         login(token, userRes);
+        onSuccess?.();
       } else {
         setError("Login failed: Invalid response structure");
       }
@@ -43,10 +45,7 @@ export default function LoginForm({ onSwitchToRegister, onSwitchToResetPassword 
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md w-full max-w-sm">
-      <h2 className="text-2xl font-bold text-center mb-6 text-gray-800 dark:text-gray-100">
-        Kirish
-      </h2>
+    <>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block text-sm mb-2 text-gray-600 dark:text-gray-300">
@@ -99,6 +98,6 @@ export default function LoginForm({ onSwitchToRegister, onSwitchToResetPassword 
           Hisobingiz yo'qmi? Ro'yxatdan o'ting
         </button>
       </div>
-    </div>
+    </>
   );
 }

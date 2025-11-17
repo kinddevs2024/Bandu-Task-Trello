@@ -59,11 +59,7 @@ export default function ResetPasswordForm({ onSwitchToLogin }: ResetPasswordForm
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md w-full max-w-sm">
-      <h2 className="text-2xl font-bold text-center mb-6 text-gray-800 dark:text-gray-100">
-        Parolni tiklash
-      </h2>
-
+    <>
       {step === "request" ? (
         <form onSubmit={handleRequestReset}>
           <div className="mb-6">
@@ -139,6 +135,6 @@ export default function ResetPasswordForm({ onSwitchToLogin }: ResetPasswordForm
           Kirishga qaytish
         </button>
       </div>
-    </div>
+    </>
   );
 }
