@@ -3,16 +3,12 @@
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Sun, Moon, Monitor, User, LogOut } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { Sun, Moon, Monitor } from "lucide-react";
 import logo from "../../public/logo_img.png";
 import logo_sm from "../../public/icon_logo.png";
 
 export default function Header() {
-  const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const { user, isAuthenticated, logout } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [animate, setAnimate] = useState(false);
 
@@ -35,14 +31,7 @@ export default function Header() {
       : "bg-white/15 dark:bg-black/10 hover:bg-white/50 dark:hover:bg-black/30"
     }`;
 
-  const handleLogout = () => {
-    logout();
-    router.push("/");
-  };
 
-  const handleLogin = () => {
-    router.push("/login");
-  };
   const isDark = theme === "dark";
 
   return (
@@ -88,27 +77,6 @@ export default function Header() {
               <Monitor className="w-4 h-4 text-blue-400 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]" />
             </button>
 
-            {/* Auth buttons */}
-            {isAuthenticated ? (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600 dark:text-gray-300">
-                  {user?.firstName} {user?.lastName}
-                </span>
-                <button
-                  onClick={handleLogout}
-                  className={`${baseButtonClasses} bg-red-500/20 hover:bg-red-500/30`}
-                >
-                  <LogOut className="w-4 h-4 text-red-500" />
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={handleLogin}
-                className={`${baseButtonClasses} bg-blue-500/20 hover:bg-blue-500/30`}
-              >
-                <User className="w-4 h-4 text-blue-500" />
-              </button>
-            )}
           </div>
         </div>
       </header>

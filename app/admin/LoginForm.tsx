@@ -32,36 +32,41 @@ export default function LoginForm({ onSwitchToRegister, onSwitchToResetPassword,
         password,
       });
 
-      const { token, userRes } = response.data;
+      const { token, user } = response.data;
       if (token) {
-        // Save token to localStorage immediately
-        localStorage.setItem('token', token);
+        // Remove "Bearer " prefix if present (backend sends token with Bearer prefix)
+        const cleanToken = token.startsWith('Bearer ') ? token.substring(7) : token;
+        
+        // Save token to localStorage (without Bearer prefix, interceptor will add it)
+        localStorage.setItem('token', cleanToken);
         
         // Save user data if available
-        if (userRes) {
-          localStorage.setItem('user', JSON.stringify(userRes));
-        }
-        
-        // Use auth context if available
-        if (authContext && userRes) {
-          authContext.login(token, userRes);
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+          
+          // Use auth context if available
+          if (authContext) {
+            authContext.login(cleanToken, user);
+          }
         } else if (authContext) {
-          // If no userRes, just set the token
-          authContext.login(token, {
+          // If no user data, create minimal user object
+          const minimalUser = {
             id: 0,
             firstName: '',
             lastName: '',
             phoneNumber: phoneNumber,
             visibility: false,
             roles: []
-          });
+          };
+          localStorage.setItem('user', JSON.stringify(minimalUser));
+          authContext.login(cleanToken, minimalUser);
         }
         
         // Call onLoginSuccess callback if provided
         if (onLoginSuccess) {
           // Wait a bit to ensure localStorage is set
           setTimeout(() => {
-            onLoginSuccess(token);
+            onLoginSuccess(cleanToken);
           }, 100);
         }
       } else {

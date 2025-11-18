@@ -56,6 +56,133 @@ function PhoneNumberChangeForm({ onSubmit }: { onSubmit: (phoneNumber: string, o
   );
 }
 
+function ChangePasswordForm({ onSubmit }: { onSubmit: (otpCode: string, newPassword: string) => void }) {
+  const [otpCode, setOtpCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    // Validate passwords match
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    // Validate password length
+    if (newPassword.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
+    if (otpCode && newPassword) {
+      onSubmit(otpCode, newPassword);
+      setOtpCode("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setError("");
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50">
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        </div>
+      )}
+      <div>
+        <label htmlFor="otp-code" className="block mb-1">OTP Code</label>
+        <input
+          id="otp-code"
+          type="text"
+          value={otpCode}
+          onChange={(e) => setOtpCode(e.target.value)}
+          placeholder="123456"
+          className="w-full p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
+          required
+        />
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          Enter the OTP code sent to your phone number
+        </p>
+      </div>
+      <div>
+        <label htmlFor="new-password" className="block mb-1">New Password</label>
+        <div className="relative">
+          <input
+            id="new-password"
+            type={showPassword ? "text" : "password"}
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="Enter new password"
+            className="w-full p-2 pr-10 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
+            required
+            minLength={6}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+          >
+            {showPassword ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            )}
+          </button>
+        </div>
+      </div>
+      <div>
+        <label htmlFor="confirm-password" className="block mb-1">Confirm New Password</label>
+        <div className="relative">
+          <input
+            id="confirm-password"
+            type={showConfirmPassword ? "text" : "password"}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Confirm new password"
+            className="w-full p-2 pr-10 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
+            required
+            minLength={6}
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+          >
+            {showConfirmPassword ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            )}
+          </button>
+        </div>
+      </div>
+      <button
+        type="submit"
+        className="w-full px-4 py-2 rounded-md border border-white/20 backdrop-blur-md shadow-sm transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-105 hover:shadow-md active:scale-95 bg-green-500/20 hover:bg-green-500/30 text-green-500"
+      >
+        Change Password
+      </button>
+    </form>
+  );
+}
+
 export default function AdminPanel(): JSX.Element {
   const router = useRouter();
   const { token, isAuthenticated, logout, isLoading } = useAuth();
@@ -128,6 +255,34 @@ export default function AdminPanel(): JSX.Element {
     }
   }, [hasCheckedToken, isClient, isLoading, token, router]);
 
+  // Load user data from localStorage on mount if available
+  useEffect(() => {
+    if (isClient && typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          setCurrentUser(parsedUser);
+          // Also update usersTotal for dashboard if we have user data
+          if (parsedUser && parsedUser.id) {
+            // User data is loaded
+          }
+        } catch (e) {
+          console.error('Error parsing stored user data:', e);
+        }
+      }
+    }
+  }, [isClient]);
+
+  // Fetch user data on mount and save it
+  useEffect(() => {
+    const currentToken = token || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
+    if (currentToken && hasCheckedToken && isClient) {
+      // Fetch and save user profile data on mount (this will update localStorage)
+      fetchCurrentUser();
+    }
+  }, [hasCheckedToken, token, isClient]);
+
   // Fetch data when view changes or page changes
   useEffect(() => {
     // Use token from context or localStorage
@@ -196,9 +351,29 @@ export default function AdminPanel(): JSX.Element {
     if (!currentToken) return;
     try {
       const res = await api.get(`/auth/me`, { headers: { Authorization: `Bearer ${currentToken}` } });
-      setCurrentUser(res.data);
+      const userData = res.data;
+      
+      // Ensure userData has all required fields from backend response
+      const completeUserData = {
+        id: userData.id || 0,
+        firstName: userData.firstName || '',
+        lastName: userData.lastName || '',
+        phoneNumber: userData.phoneNumber || '',
+        visibility: userData.visibility !== undefined ? userData.visibility : true,
+        roles: userData.roles || []
+      };
+      
+      setCurrentUser(completeUserData);
+      
+      // Save user data to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(completeUserData));
+      }
+      
+      return completeUserData;
     } catch (err) {
       console.error(err);
+      return null;
     }
   };
 
@@ -249,6 +424,23 @@ export default function AdminPanel(): JSX.Element {
     } catch (err: any) {
       console.error(err);
       alert(err.response?.data?.message || "Failed to change phone number");
+    }
+  };
+
+  const changePassword = async (otpCode: string, newPassword: string) => {
+    const currentToken = getToken();
+    if (!currentToken) return;
+    try {
+      // Use the reset-password endpoint with OTP code
+      await api.post(`/auth/reset-password`, { 
+        phoneNumber: currentUser?.phoneNumber || '',
+        otpCode,
+        newPassword 
+      }, { headers: { Authorization: `Bearer ${currentToken}` } });
+      alert("Password changed successfully!");
+    } catch (err: any) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to change password. Please check your OTP code.");
     }
   };
 
@@ -335,7 +527,16 @@ export default function AdminPanel(): JSX.Element {
               </div>
               <div className="p-4 bg-white/30 dark:bg-gray-800/50 backdrop-blur-md shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
                 <h3 className="text-lg font-semibold mb-2">Current User</h3>
-                <p className="text-sm">{currentUser?.firstName || "Not loaded"}</p>
+                <p className="text-sm font-medium">
+                  {currentUser 
+                    ? `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim() || currentUser.phoneNumber || "User"
+                    : "Not loaded"}
+                </p>
+                {currentUser && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {currentUser.roles?.join(", ") || "No roles"}
+                  </p>
+                )}
                 <button
                   onClick={() => {
                     setView("auth");
@@ -628,49 +829,99 @@ export default function AdminPanel(): JSX.Element {
 
         {view === "auth" && (
           <section className="rounded-2xl p-6 border border-gray-200 dark:border-gray-700 bg-white/30 dark:bg-black/20 backdrop-blur-md shadow-sm transition-all duration-300">
-            <h2 className="text-xl font-semibold mb-4">Authentication Management</h2>
-            <div className="mb-4">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold">Profile & Authentication</h2>
               <button
                 onClick={fetchCurrentUser}
                 className={`${baseButtonClasses} bg-blue-500/20 hover:bg-blue-500/30 text-blue-500`}
               >
-                Refresh Current User
+                Refresh Profile
               </button>
             </div>
 
-            {currentUser && (
-              <div className="mb-6 p-4 bg-white/30 dark:bg-gray-800/50 backdrop-blur-md shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold mb-2">Current User Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <strong>ID:</strong> {currentUser.id}
+            {currentUser ? (
+              <div className="space-y-6">
+                {/* Profile Card - Simplified */}
+                <div className="p-6 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 dark:from-blue-500/20 dark:via-purple-500/20 dark:to-pink-500/20 backdrop-blur-md shadow-lg rounded-xl border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                      {currentUser.firstName?.[0]?.toUpperCase() || "U"}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+                        {currentUser.firstName && currentUser.lastName
+                          ? `${currentUser.firstName} ${currentUser.lastName}`
+                          : currentUser.firstName || "User"}
+                      </h3>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {currentUser.roles && currentUser.roles.length > 0 ? (
+                          currentUser.roles.map((role: string, index: number) => (
+                            <span
+                              key={index}
+                              className="px-3 py-1 bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full text-sm font-medium border border-blue-500/30"
+                            >
+                              {role.replace('ROLE_', '')}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-gray-500 dark:text-gray-400 text-sm">No roles assigned</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <strong>First Name:</strong> {currentUser.firstName || "-"}
-                  </div>
-                  <div>
-                    <strong>Last Name:</strong> {currentUser.lastName || "-"}
-                  </div>
-                  <div>
-                    <strong>Phone:</strong> {currentUser.phoneNumber || "-"}
-                  </div>
-                  <div>
-                    <strong>Visibility:</strong> {currentUser.visibility ? "Visible" : "Hidden"}
-                  </div>
-                  <div>
-                    <strong>Roles:</strong> {currentUser.roles?.join(", ") || "-"}
+                </div>
+
+                {/* Account Settings - Styled with two separate divs */}
+                <div className="space-y-6">
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Account Settings</h3>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Change Phone Number */}
+                    <div className="p-6 bg-gradient-to-br from-green-500/10 via-emerald-500/10 to-teal-500/10 dark:from-green-500/20 dark:via-emerald-500/20 dark:to-teal-500/20 backdrop-blur-md shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                          <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                          </svg>
+                        </div>
+                        <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Change Phone Number</h4>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        Update your registered phone number. You will need to verify with an OTP code.
+                      </p>
+                      <PhoneNumberChangeForm onSubmit={changePhoneNumber} />
+                    </div>
+
+                    {/* Change Password */}
+                    <div className="p-6 bg-gradient-to-br from-blue-500/10 via-indigo-500/10 to-purple-500/10 dark:from-blue-500/20 dark:via-indigo-500/20 dark:to-purple-500/20 backdrop-blur-md shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                          <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                        </div>
+                        <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Change Password</h4>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        Update your account password. You will need to verify with an OTP code sent to your phone.
+                      </p>
+                      <ChangePasswordForm onSubmit={changePassword} />
+                    </div>
                   </div>
                 </div>
               </div>
+            ) : (
+              <div className="p-8 text-center bg-white/30 dark:bg-gray-800/50 backdrop-blur-md shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                <p className="text-gray-600 dark:text-gray-400">Loading profile data...</p>
+                <button
+                  onClick={fetchCurrentUser}
+                  className={`${baseButtonClasses} bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 mt-4`}
+                >
+                  Retry
+                </button>
+              </div>
             )}
-
-            <div className="p-4 bg-white/30 dark:bg-gray-800/50 backdrop-blur-md shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold mb-2">Change Phone Number</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Use this endpoint to change your registered phone number. You will need to verify with an OTP code.
-              </p>
-              <PhoneNumberChangeForm onSubmit={changePhoneNumber} />
-            </div>
           </section>
         )}
       </main>

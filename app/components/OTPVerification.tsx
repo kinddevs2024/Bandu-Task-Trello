@@ -36,17 +36,20 @@ export default function OTPVerification({ phoneNumber, onSwitchToLogin, onSwitch
         otpCode,
       });
 
-      const { token, userRes } = response.data;
+      const { token, user } = response.data;
       if (token) {
-        // Save token to localStorage immediately
-        localStorage.setItem('token', token);
+        // Remove "Bearer " prefix if present (backend sends token with Bearer prefix)
+        const cleanToken = token.startsWith('Bearer ') ? token.substring(7) : token;
+        
+        // Save token to localStorage (without Bearer prefix, interceptor will add it)
+        localStorage.setItem('token', cleanToken);
         
         // Save user data if available
-        if (userRes) {
-          localStorage.setItem('user', JSON.stringify(userRes));
-          login(token, userRes);
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+          login(cleanToken, user);
         } else {
-          // If no userRes, create a minimal user object
+          // If no user data, create a minimal user object
           const minimalUser = {
             id: 0,
             firstName: '',
@@ -56,7 +59,7 @@ export default function OTPVerification({ phoneNumber, onSwitchToLogin, onSwitch
             roles: []
           };
           localStorage.setItem('user', JSON.stringify(minimalUser));
-          login(token, minimalUser);
+          login(cleanToken, minimalUser);
         }
         
         // Call success callback if provided
