@@ -9,6 +9,44 @@ import { Analytics } from "@vercel/analytics/next";
 
 type ViewType = "dashboard" | "users" | "roadmap" | "auth";
 
+// Toast Notification Component
+function Toast({ message, type, onClose }: { message: string; type: "success" | "error"; onClose: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div
+      className={`fixed top-20 right-4 z-50 p-4 rounded-lg shadow-lg backdrop-blur-md border transition-all duration-300 ${
+        type === "success"
+          ? "bg-green-500/20 border-green-500/50 text-green-500"
+          : "bg-red-500/20 border-red-500/50 text-red-500"
+      }`}
+    >
+      <div className="flex items-center gap-2">
+        {type === "success" ? (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        ) : (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        )}
+        <span>{message}</span>
+        <button onClick={onClose} className="ml-2 hover:opacity-70">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function PhoneNumberChangeForm({ onSubmit }: { onSubmit: (phoneNumber: string, otpCode: string) => void }) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otpCode, setOtpCode] = useState("");
@@ -191,10 +229,15 @@ export default function AdminPanel(): JSX.Element {
   const [view, setView] = useState<ViewType>("dashboard");
 
   const [users, setUsers] = useState<any[]>([]);
-  const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [roadmap, setRoadmap] = useState<any[]>([]);
-  const [selectedRoadmap, setSelectedRoadmap] = useState<any | null>(null);
+  const [editingRoadmap, setEditingRoadmap] = useState<any | null>(null);
+  const [editingTask, setEditingTask] = useState<{ task: any; roadmapId: number } | null>(null);
   const [currentUser, setCurrentUser] = useState<any | null>(null);
+  const [dashboardStats, setDashboardStats] = useState<any | null>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+
+  // Toast notification state
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   // Form states
   const [showCreateRoadmap, setShowCreateRoadmap] = useState(false);
@@ -287,16 +330,75 @@ export default function AdminPanel(): JSX.Element {
   useEffect(() => {
     // Use token from context or localStorage
     const currentToken = token || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
-    if (!currentToken) return;
+    if (!currentToken || !hasCheckedToken || !isClient) return;
     
+    if (view === "dashboard") {
+      // Always fetch fresh data when dashboard is opened
+      fetchDashboardStats();
+    }
     if (view === "users") fetchUsers();
     if (view === "roadmap") fetchRoadmap();
     if (view === "auth") fetchCurrentUser();
-  }, [view, token]);
+  }, [view, token, hasCheckedToken, isClient]);
 
   // ----------------- Data fetching -----------------
   const getToken = () => {
     return token || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
+  };
+
+  const fetchDashboardStats = async () => {
+    const currentToken = getToken();
+    if (!currentToken) return;
+    setIsLoadingStats(true);
+    try {
+      // Always fetch fresh users and roadmaps data for dashboard
+      const [usersRes, roadmapsRes] = await Promise.all([
+        api.get(`/admin/users`, { headers: { Authorization: `Bearer ${currentToken}` } }).catch(() => null),
+        api.get(`/admin/roadmap`, { headers: { Authorization: `Bearer ${currentToken}` } }).catch(() => null)
+      ]);
+
+      // Update users data
+      if (usersRes?.data) {
+        setUsers(usersRes.data || []);
+        setUsersTotal(usersRes.data?.length || 0);
+      }
+
+      // Update roadmaps data
+      if (roadmapsRes?.data) {
+        setRoadmap(roadmapsRes.data || []);
+      }
+
+      // Try to fetch dashboard stats from backend (if endpoint exists)
+      try {
+        const dashboardRes = await api.get(`/admin/dashboard`, { headers: { Authorization: `Bearer ${currentToken}` } });
+        setDashboardStats({
+          ...dashboardRes.data,
+          usersCount: dashboardRes.data?.usersCount ?? usersRes?.data?.length ?? 0,
+          roadmapsCount: dashboardRes.data?.roadmapsCount ?? roadmapsRes?.data?.length ?? 0,
+          lastUpdated: new Date().toISOString()
+        });
+      } catch (dashboardErr) {
+        // Dashboard endpoint doesn't exist, create stats from individual fetches
+        console.log("Dashboard endpoint not available, using individual stats...");
+        setDashboardStats({
+          usersCount: usersRes?.data?.length || 0,
+          roadmapsCount: roadmapsRes?.data?.length || 0,
+          lastUpdated: new Date().toISOString()
+        });
+      }
+    } catch (err: any) {
+      console.error("Error fetching dashboard stats:", err);
+      // Even if there's an error, try to set basic stats if we have any data
+      if (users.length > 0 || roadmap.length > 0) {
+        setDashboardStats({
+          usersCount: users.length,
+          roadmapsCount: roadmap.length,
+          lastUpdated: new Date().toISOString()
+        });
+      }
+    } finally {
+      setIsLoadingStats(false);
+    }
   };
 
   const fetchUsers = async () => {
@@ -311,18 +413,6 @@ export default function AdminPanel(): JSX.Element {
     }
   };
 
-  const fetchUserById = async (userId: number) => {
-    const currentToken = getToken();
-    if (!currentToken) return;
-    try {
-      const res = await api.get(`/admin/users/${userId}`, { headers: { Authorization: `Bearer ${currentToken}` } });
-      setSelectedUser(res.data);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to fetch user details");
-    }
-  };
-
   const fetchRoadmap = async () => {
     const currentToken = getToken();
     if (!currentToken) return;
@@ -331,18 +421,6 @@ export default function AdminPanel(): JSX.Element {
       setRoadmap(res.data || []);
     } catch (err) {
       console.error(err);
-    }
-  };
-
-  const fetchRoadmapById = async (roadmapId: number) => {
-    const currentToken = getToken();
-    if (!currentToken) return;
-    try {
-      const res = await api.get(`/admin/roadmap/${roadmapId}`, { headers: { Authorization: `Bearer ${currentToken}` } });
-      setSelectedRoadmap(res.data);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to fetch roadmap details");
     }
   };
 
@@ -391,26 +469,100 @@ export default function AdminPanel(): JSX.Element {
         roadMapTasksRequestList: [{ task: "", visibility: true }],
       });
       fetchRoadmap();
-      alert("Roadmap created successfully!");
+      showToast("Roadmap created successfully!", "success");
     } catch (err: any) {
       console.error(err);
-      alert(err.response?.data?.message || "Failed to create roadmap");
+      showToast(err.response?.data?.message || "Failed to create roadmap", "error");
     }
   };
 
-  const toggleRoadmapVisibility = async (roadmapId: number) => {
+  const showToast = (message: string, type: "success" | "error") => {
+    setToast({ message, type });
+  };
+
+  const updateRoadmap = async (roadmapId: number, roadmapData: any) => {
+    const currentToken = getToken();
+    if (!currentToken) return;
+    try {
+      await api.put(`/admin/roadmap/${roadmapId}`, roadmapData, { headers: { Authorization: `Bearer ${currentToken}` } });
+      fetchRoadmap();
+      setEditingRoadmap(null);
+      showToast("Roadmap updated successfully!", "success");
+    } catch (err: any) {
+      console.error(err);
+      showToast(err.response?.data?.message || "Failed to update roadmap", "error");
+    }
+  };
+
+  const toggleRoadmapVisibility = async (roadmapId: number, currentVisibility: boolean) => {
     const currentToken = getToken();
     if (!currentToken) return;
     try {
       await api.put(`/admin/roadmap/${roadmapId}/toggle`, {}, { headers: { Authorization: `Bearer ${currentToken}` } });
       fetchRoadmap();
-      if (selectedRoadmap?.id === roadmapId) {
-        fetchRoadmapById(roadmapId);
-      }
-      alert("Roadmap visibility toggled!");
+      showToast(`Roadmap ${currentVisibility ? "hidden" : "made visible"} successfully!`, "success");
     } catch (err: any) {
       console.error(err);
-      alert(err.response?.data?.message || "Failed to toggle roadmap visibility");
+      showToast(err.response?.data?.message || "Failed to toggle roadmap visibility", "error");
+    }
+  };
+
+  const updateTask = async (roadmapId: number, taskId: number, taskData: any) => {
+    const currentToken = getToken();
+    if (!currentToken) return;
+    try {
+      const roadmapItem = roadmap.find((r: any) => r.id === roadmapId);
+      if (!roadmapItem) return;
+      
+      const updatedTasks = roadmapItem.tasks?.map((t: any) => 
+        t.id === taskId ? { ...t, ...taskData } : t
+      ) || [];
+      
+      const updatedRoadmap = {
+        ...roadmapItem,
+        tasks: updatedTasks,
+        roadMapTasksRequestList: updatedTasks.map((t: any) => ({
+          task: t.task,
+          visibility: t.visibility !== false
+        }))
+      };
+      
+      await api.put(`/admin/roadmap/${roadmapId}`, updatedRoadmap, { headers: { Authorization: `Bearer ${currentToken}` } });
+      fetchRoadmap();
+      setEditingTask(null);
+      showToast("Task updated successfully!", "success");
+    } catch (err: any) {
+      console.error(err);
+      showToast(err.response?.data?.message || "Failed to update task", "error");
+    }
+  };
+
+  const toggleTaskVisibility = async (roadmapId: number, taskId: number, currentVisibility: boolean) => {
+    const currentToken = getToken();
+    if (!currentToken) return;
+    try {
+      const roadmapItem = roadmap.find((r: any) => r.id === roadmapId);
+      if (!roadmapItem) return;
+      
+      const updatedTasks = roadmapItem.tasks?.map((t: any) => 
+        t.id === taskId ? { ...t, visibility: !currentVisibility } : t
+      ) || [];
+      
+      const updatedRoadmap = {
+        ...roadmapItem,
+        tasks: updatedTasks,
+        roadMapTasksRequestList: updatedTasks.map((t: any) => ({
+          task: t.task,
+          visibility: t.visibility !== false
+        }))
+      };
+      
+      await api.put(`/admin/roadmap/${roadmapId}`, updatedRoadmap, { headers: { Authorization: `Bearer ${currentToken}` } });
+      fetchRoadmap();
+      showToast(`Task ${currentVisibility ? "hidden" : "made visible"} successfully!`, "success");
+    } catch (err: any) {
+      console.error(err);
+      showToast(err.response?.data?.message || "Failed to toggle task visibility", "error");
     }
   };
 
@@ -419,11 +571,11 @@ export default function AdminPanel(): JSX.Element {
     if (!currentToken) return;
     try {
       await api.post(`/auth/change-phone-number`, { phoneNumber, otpCode }, { headers: { Authorization: `Bearer ${currentToken}` } });
-      alert("Phone number changed successfully!");
+      showToast("Phone number changed successfully!", "success");
       fetchCurrentUser();
     } catch (err: any) {
       console.error(err);
-      alert(err.response?.data?.message || "Failed to change phone number");
+      showToast(err.response?.data?.message || "Failed to change phone number", "error");
     }
   };
 
@@ -437,10 +589,10 @@ export default function AdminPanel(): JSX.Element {
         otpCode,
         newPassword 
       }, { headers: { Authorization: `Bearer ${currentToken}` } });
-      alert("Password changed successfully!");
+      showToast("Password changed successfully!", "success");
     } catch (err: any) {
       console.error(err);
-      alert(err.response?.data?.message || "Failed to change password. Please check your OTP code.");
+      showToast(err.response?.data?.message || "Failed to change password. Please check your OTP code.", "error");
     }
   };
 
@@ -469,7 +621,8 @@ export default function AdminPanel(): JSX.Element {
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-6">
-       <Analytics/>
+      <Analytics/>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       <header className="fixed top-0 left-0 w-full z-50 bg-white/10 dark:bg-black/20 backdrop-blur-md shadow-md flex justify-between items-center px-10 py-4 mb-8">
         <h1 className="text-2xl font-bold">
           <Image src="/logo_img.png" alt="logo" width={100} height={100} />
@@ -496,12 +649,48 @@ export default function AdminPanel(): JSX.Element {
       <main className="pt-24">
         {view === "dashboard" && (
           <section className="rounded-2xl p-6 border border-gray-200 dark:border-gray-700 bg-white/30 dark:bg-black/20 backdrop-blur-md shadow-sm transition-all duration-300">
-            <h2 className="text-xl font-semibold mb-4">Dashboard</h2>
-            <div className="text-gray-700 dark:text-gray-300 mb-6">Welcome to the Admin Dashboard.</div>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Dashboard</h2>
+              <button
+                onClick={fetchDashboardStats}
+                disabled={isLoadingStats}
+                className={`${baseButtonClasses} bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 ${isLoadingStats ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {isLoadingStats ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Updating...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Refresh
+                  </span>
+                )}
+              </button>
+            </div>            
+            {dashboardStats && dashboardStats.lastUpdated && (
+              <div className="mb-4 text-xs text-gray-500 dark:text-gray-400">
+                Last updated: {new Date(dashboardStats.lastUpdated).toLocaleString()}
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-4 bg-white/30 dark:bg-gray-800/50 backdrop-blur-md shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
                 <h3 className="text-lg font-semibold mb-2">Users</h3>
-                <p className="text-2xl font-bold">{usersTotal}</p>
+                <p className="text-2xl font-bold">
+                  {dashboardStats?.usersCount !== undefined ? dashboardStats.usersCount : usersTotal}
+                </p>
+                {dashboardStats?.activeUsersCount !== undefined && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Active: {dashboardStats.activeUsersCount}
+                  </p>
+                )}
                 <button
                   onClick={() => {
                     setView("users");
@@ -514,7 +703,14 @@ export default function AdminPanel(): JSX.Element {
               </div>
               <div className="p-4 bg-white/30 dark:bg-gray-800/50 backdrop-blur-md shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
                 <h3 className="text-lg font-semibold mb-2">Roadmaps</h3>
-                <p className="text-2xl font-bold">{roadmap.length}</p>
+                <p className="text-2xl font-bold">
+                  {dashboardStats?.roadmapsCount !== undefined ? dashboardStats.roadmapsCount : roadmap.length}
+                </p>
+                {dashboardStats?.visibleRoadmapsCount !== undefined && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Visible: {dashboardStats.visibleRoadmapsCount}
+                  </p>
+                )}
                 <button
                   onClick={() => {
                     setView("roadmap");
@@ -548,6 +744,36 @@ export default function AdminPanel(): JSX.Element {
                 </button>
               </div>
             </div>
+
+            {/* Additional dashboard stats if available from backend */}
+            {dashboardStats && (
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {dashboardStats.totalTasks !== undefined && (
+                  <div className="p-4 bg-gradient-to-br from-blue-500/10 to-purple-500/10 dark:from-blue-500/20 dark:to-purple-500/20 backdrop-blur-md shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
+                    <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Tasks</h4>
+                    <p className="text-2xl font-bold">{dashboardStats.totalTasks}</p>
+                  </div>
+                )}
+                {dashboardStats.completedTasks !== undefined && (
+                  <div className="p-4 bg-gradient-to-br from-green-500/10 to-emerald-500/10 dark:from-green-500/20 dark:to-emerald-500/20 backdrop-blur-md shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
+                    <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Completed Tasks</h4>
+                    <p className="text-2xl font-bold">{dashboardStats.completedTasks}</p>
+                  </div>
+                )}
+                {dashboardStats.pendingTasks !== undefined && (
+                  <div className="p-4 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 dark:from-yellow-500/20 dark:to-orange-500/20 backdrop-blur-md shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
+                    <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Pending Tasks</h4>
+                    <p className="text-2xl font-bold">{dashboardStats.pendingTasks}</p>
+                  </div>
+                )}
+                {dashboardStats.newUsersToday !== undefined && (
+                  <div className="p-4 bg-gradient-to-br from-pink-500/10 to-rose-500/10 dark:from-pink-500/20 dark:to-rose-500/20 backdrop-blur-md shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
+                    <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">New Users Today</h4>
+                    <p className="text-2xl font-bold">{dashboardStats.newUsersToday}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </section>
         )}
 
@@ -569,9 +795,7 @@ export default function AdminPanel(): JSX.Element {
                   <th className="p-2 text-left">First Name</th>
                   <th className="p-2 text-left">Last Name</th>
                   <th className="p-2 text-left">Phone</th>
-                  <th className="p-2 text-left">Visibility</th>
                   <th className="p-2 text-left">Roles</th>
-                  <th className="p-2 text-left">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -581,51 +805,11 @@ export default function AdminPanel(): JSX.Element {
                     <td className="p-2">{u.firstName || "-"}</td>
                     <td className="p-2">{u.lastName || "-"}</td>
                     <td className="p-2">{u.phoneNumber || "-"}</td>
-                    <td className="p-2">{u.visibility ? "Visible" : "Hidden"}</td>
                     <td className="p-2">{u.roles?.join(", ") || "-"}</td>
-                    <td className="p-2">
-                      <button
-                        onClick={() => fetchUserById(u.id)}
-                        className={`${baseButtonClasses} bg-green-500/20 hover:bg-green-500/30 text-green-500 text-sm px-2 py-1`}
-                      >
-                        View Details
-                      </button>
-                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {selectedUser && (
-              <div className="mt-6 p-4 bg-white/30 dark:bg-gray-800/50 backdrop-blur-md shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold mb-2">User Details</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <strong>ID:</strong> {selectedUser.id}
-                  </div>
-                  <div>
-                    <strong>First Name:</strong> {selectedUser.firstName || "-"}
-                  </div>
-                  <div>
-                    <strong>Last Name:</strong> {selectedUser.lastName || "-"}
-                  </div>
-                  <div>
-                    <strong>Phone:</strong> {selectedUser.phoneNumber || "-"}
-                  </div>
-                  <div>
-                    <strong>Visibility:</strong> {selectedUser.visibility ? "Visible" : "Hidden"}
-                  </div>
-                  <div>
-                    <strong>Roles:</strong> {selectedUser.roles?.join(", ") || "-"}
-                  </div>
-                </div>
-                <button
-                  onClick={() => setSelectedUser(null)}
-                  className={`${baseButtonClasses} bg-gray-500/20 hover:bg-gray-500/30 text-gray-500 mt-4`}
-                >
-                  Close
-                </button>
-              </div>
-            )}
           </section>
         )}
 
@@ -760,68 +944,269 @@ export default function AdminPanel(): JSX.Element {
               {roadmap.map((r) => (
                 <div key={r.id} className="p-4 bg-white/30 dark:bg-gray-800/50 backdrop-blur-md shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
                   <div className="flex justify-between items-start mb-2">
-                    <div>
+                    <div className="flex-1">
                       <h3 className="text-lg font-semibold">{r.title}</h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400">{r.description}</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-4 items-center">
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={!!r.visibility}
+                          onChange={() => toggleRoadmapVisibility(r.id, !!r.visibility)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                        {!!r.visibility && (
+                          <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Visible
+                          </span>
+                        )}
+                      </label>
                       <button
-                        onClick={() => fetchRoadmapById(r.id)}
+                        onClick={() => setEditingRoadmap({ 
+                          ...r, 
+                          roadMapTasksRequestList: r.tasks?.map((t: any) => ({ task: t.task, visibility: t.visibility !== false })) || [{ task: "", visibility: true }]
+                        })}
                         className={`${baseButtonClasses} bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 text-sm px-2 py-1`}
                       >
-                        View Details
-                      </button>
-                      <button
-                        onClick={() => toggleRoadmapVisibility(r.id)}
-                        className={`${baseButtonClasses} bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-500 text-sm px-2 py-1`}
-                      >
-                        Toggle Visibility
+                        Edit
                       </button>
                     </div>
                   </div>
                   {r.tasks && r.tasks.length > 0 && (
-                    <div className="mt-2">
-                      <strong>Tasks:</strong>
-                      <ul className="list-disc list-inside ml-2">
+                    <div className="mt-4">
+                      <strong className="block mb-2">Tasks:</strong>
+                      <div className="space-y-2">
                         {r.tasks.map((task: any) => (
-                          <li key={task.id} className={task.completed ? "line-through text-gray-500" : ""}>
-                            {task.task}
-                          </li>
+                          <div key={task.id} className="flex items-center justify-between p-2 bg-white/20 dark:bg-gray-700/20 rounded border border-gray-200 dark:border-gray-600">
+                            <div className="flex items-center gap-3 flex-1">
+                              <label className="relative inline-flex items-center cursor-pointer" title={`Toggle visibility for task: ${task.task}`}>
+                                <input
+                                  type="checkbox"
+                                  checked={!!task.visibility}
+                                  onChange={() => toggleTaskVisibility(r.id, task.id, !!task.visibility)}
+                                  className="sr-only peer"
+                                  aria-label={`Toggle visibility for task: ${task.task}`}
+                                />
+                                <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                              </label>
+                              <span className={task.completed ? "line-through text-gray-500" : ""}>
+                                {task.task}
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => setEditingTask({ task, roadmapId: r.id })}
+                              className={`${baseButtonClasses} bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 text-sm px-2 py-1`}
+                            >
+                              Edit
+                            </button>
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     </div>
                   )}
                 </div>
               ))}
             </div>
 
-            {selectedRoadmap && (
-              <div className="mt-6 p-4 bg-white/30 dark:bg-gray-800/50 backdrop-blur-md shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold mb-2">Roadmap Details</h3>
-                <div className="space-y-2">
-                  <div><strong>ID:</strong> {selectedRoadmap.id}</div>
-                  <div><strong>Title:</strong> {selectedRoadmap.title}</div>
-                  <div><strong>Description:</strong> {selectedRoadmap.description}</div>
-                  <div><strong>Result:</strong> {selectedRoadmap.result}</div>
-                  {selectedRoadmap.tasks && selectedRoadmap.tasks.length > 0 && (
-                    <div>
-                      <strong>Tasks:</strong>
-                      <ul className="list-disc list-inside ml-4">
-                        {selectedRoadmap.tasks.map((task: any) => (
-                          <li key={task.id} className={task.completed ? "line-through text-gray-500" : ""}>
-                            {task.task} {task.completed ? "(Completed)" : "(Pending)"}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-                <button
-                  onClick={() => setSelectedRoadmap(null)}
-                  className={`${baseButtonClasses} bg-gray-500/20 hover:bg-gray-500/30 text-gray-500 mt-4`}
+            {editingRoadmap && (
+              <div 
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+                onClick={() => setEditingRoadmap(null)}
+              >
+                <div 
+                  className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto m-4 p-6 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-xl rounded-xl border border-gray-200 dark:border-gray-700"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  Close
-                </button>
+                  <button
+                    onClick={() => setEditingRoadmap(null)}
+                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                  <h3 className="text-2xl font-semibold mb-6">Edit Roadmap</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label htmlFor="edit-roadmap-title" className="block mb-1">Title</label>
+                      <input
+                        id="edit-roadmap-title"
+                        type="text"
+                        value={editingRoadmap.title || ""}
+                        onChange={(e) => setEditingRoadmap({ ...editingRoadmap, title: e.target.value })}
+                        placeholder="Enter roadmap title"
+                        className="w-full p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="edit-roadmap-description" className="block mb-1">Description</label>
+                      <textarea
+                        id="edit-roadmap-description"
+                        value={editingRoadmap.description || ""}
+                        onChange={(e) => setEditingRoadmap({ ...editingRoadmap, description: e.target.value })}
+                        placeholder="Enter roadmap description"
+                        className="w-full p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
+                        rows={3}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="edit-roadmap-result" className="block mb-1">Result</label>
+                      <textarea
+                        id="edit-roadmap-result"
+                        value={editingRoadmap.result || ""}
+                        onChange={(e) => setEditingRoadmap({ ...editingRoadmap, result: e.target.value })}
+                        placeholder="Enter expected result"
+                        className="w-full p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
+                        rows={3}
+                      />
+                    </div>
+                    <div>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={editingRoadmap.visibility}
+                          onChange={(e) => setEditingRoadmap({ ...editingRoadmap, visibility: e.target.checked })}
+                        />
+                        Visibility
+                      </label>
+                    </div>
+                    <div>
+                      <label className="block mb-2">Tasks</label>
+                      {editingRoadmap.roadMapTasksRequestList?.map((task: any, index: number) => (
+                        <div key={index} className="flex gap-2 mb-2">
+                          <input
+                            type="text"
+                            value={task.task}
+                            onChange={(e) => {
+                              const newTasks = [...(editingRoadmap.roadMapTasksRequestList || [])];
+                              newTasks[index].task = e.target.value;
+                              setEditingRoadmap({ ...editingRoadmap, roadMapTasksRequestList: newTasks });
+                            }}
+                            placeholder="Task description"
+                            className="flex-1 p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
+                          />
+                          <label className="flex items-center gap-2 px-2">
+                            <input
+                              type="checkbox"
+                              checked={task.visibility}
+                              onChange={(e) => {
+                                const newTasks = [...(editingRoadmap.roadMapTasksRequestList || [])];
+                                newTasks[index].visibility = e.target.checked;
+                                setEditingRoadmap({ ...editingRoadmap, roadMapTasksRequestList: newTasks });
+                              }}
+                            />
+                            Visible
+                          </label>
+                          <button
+                            onClick={() => {
+                              const newTasks = (editingRoadmap.roadMapTasksRequestList || []).filter((_: any, i: number) => i !== index);
+                              setEditingRoadmap({ ...editingRoadmap, roadMapTasksRequestList: newTasks });
+                            }}
+                            className={`${baseButtonClasses} bg-red-500/20 hover:bg-red-500/30 text-red-500 px-2`}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => {
+                          setEditingRoadmap({
+                            ...editingRoadmap,
+                            roadMapTasksRequestList: [...(editingRoadmap.roadMapTasksRequestList || []), { task: "", visibility: true }],
+                          });
+                        }}
+                        className={`${baseButtonClasses} bg-blue-500/20 hover:bg-blue-500/30 text-blue-500`}
+                      >
+                        Add Task
+                      </button>
+                    </div>
+                    <div className="flex gap-2 pt-4">
+                      <button
+                        onClick={() => updateRoadmap(editingRoadmap.id, editingRoadmap)}
+                        className={`${baseButtonClasses} bg-green-500/20 hover:bg-green-500/30 text-green-500 flex-1`}
+                      >
+                        Save Changes
+                      </button>
+                      <button
+                        onClick={() => setEditingRoadmap(null)}
+                        className={`${baseButtonClasses} bg-gray-500/20 hover:bg-gray-500/30 text-gray-500 flex-1`}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {editingTask && (
+              <div 
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+                onClick={() => setEditingTask(null)}
+              >
+                <div 
+                  className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4 p-6 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-xl rounded-xl border border-gray-200 dark:border-gray-700"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => setEditingTask(null)}
+                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                  <h3 className="text-2xl font-semibold mb-6">Edit Task</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label htmlFor="edit-task-name" className="block mb-1">Task Name</label>
+                      <input
+                        id="edit-task-name"
+                        type="text"
+                        value={editingTask.task.task || ""}
+                        onChange={(e) => setEditingTask({ ...editingTask, task: { ...editingTask.task, task: e.target.value } })}
+                        placeholder="Enter task name"
+                        className="w-full p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
+                      />
+                    </div>
+                    <div>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={!!editingTask.task.visibility}
+                          onChange={(e) => setEditingTask({ ...editingTask, task: { ...editingTask.task, visibility: e.target.checked } })}
+                        />
+                        Visibility
+                      </label>
+                    </div>
+                    <div>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={!!editingTask.task.completed}
+                          onChange={(e) => setEditingTask({ ...editingTask, task: { ...editingTask.task, completed: e.target.checked } })}
+                        />
+                        Completed
+                      </label>
+                    </div>
+                    <div className="flex gap-2 pt-4">
+                      <button
+                        onClick={() => updateTask(editingTask.roadmapId, editingTask.task.id, editingTask.task)}
+                        className={`${baseButtonClasses} bg-green-500/20 hover:bg-green-500/30 text-green-500 flex-1`}
+                      >
+                        Save Changes
+                      </button>
+                      <button
+                        onClick={() => setEditingTask(null)}
+                        className={`${baseButtonClasses} bg-gray-500/20 hover:bg-gray-500/30 text-gray-500 flex-1`}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </section>
