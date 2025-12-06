@@ -22,11 +22,6 @@
       },
       {
         "id": 4,
-        "task": "Telegram mini app test versiyasi",
-        "completed": false
-      },
-      {
-        "id": 5,
         "task": "UI/UX dizayn va brend tayyorlash",
         "completed": true
       }
