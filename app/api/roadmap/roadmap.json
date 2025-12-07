@@ -13,12 +13,12 @@
       {
         "id": 2,
         "task": "Geo-lokatsiya va navbat logikasi",
-        "completed": false
+        "completed": true
       },
       {
         "id": 3,
         "task": "To‘lov tizimi sinov integratsiyasi (Click / Payme)",
-        "completed": false
+        "completed": true
       },
       {
         "id": 4,

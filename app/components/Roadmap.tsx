@@ -52,6 +52,37 @@ export default function Roadmap() {
     [steps]
   );
 
+  // Calculate completion percentage based on sequential task completion
+  const calculateCompletionPercentage = (tasks: Task[] | undefined): number => {
+    if (!tasks || tasks.length === 0) return 0;
+
+    // Count how many tasks are completed in sequence from the start
+    let completedInSequence = 0;
+    for (let i = 0; i < tasks.length; i++) {
+      if (tasks[i].completed) {
+        completedInSequence++;
+      } else {
+        // Stop counting if we hit an incomplete task (sequential requirement)
+        break;
+      }
+    }
+
+    // Calculate percentage based on sequential completion
+    return Math.round((completedInSequence / tasks.length) * 100);
+  };
+
+  // Get progress bar color based on completion percentage
+  const getProgressBarColor = (percentage: number, isDark: boolean): string => {
+    if (percentage === 0) {
+      return isDark ? "bg-gray-600" : "bg-gray-300";
+    } else if (percentage === 100) {
+      return isDark ? "bg-green-600" : "bg-green-500";
+    } else {
+      // For partial completion, use yellow/orange gradient
+      return isDark ? "bg-yellow-500" : "bg-yellow-400";
+    }
+  };
+
   if (!mounted) return null;
 
   const isDark = theme === "dark";
@@ -62,7 +93,7 @@ export default function Roadmap() {
         isDark ? "bg-black" : "bg-gray-100"
       }`}
     >
-      <Analytics/>
+      <Analytics />
       <div className="max-w-5xl mx-auto px-4">
         <h2
           className={`text-3xl sm:text-4xl font-bold text-center mb-8 transition-colors duration-300 ${
@@ -97,13 +128,13 @@ export default function Roadmap() {
                   : " bg-white/40 border-yellow-300 shadow-[0_15px_40px_rgba(59,130,246,0.15),0_8px_20px_rgba(234,179,8,0.2),0_4px_10px_rgba(59,130,246,0.1)] ring-1 ring-yellow-300 hover:shadow-[0_20px_55px_rgba(59,130,246,0.2),0_10px_25px_rgba(234,179,8,0.15),0_5px_15px_rgba(59,130,246,0.2)]";
               } else if (isFuture) {
                 containerClass += isDark
-                ? " bg-black/20 border-gray-700 text-gray-300 shadow-[0_8px_25px_rgba(0,0,0,0.3),0_4px_10px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_35px_rgba(0,0,0,0.4),0_6px_15px_rgba(0,0,0,0.3)]"
-                : " bg-white/30 border-gray-200 text-gray-600 shadow-[0_8px_25px_rgba(0,0,0,0.15),0_4px_10px_rgba(0,0,0,0.1)] hover:shadow-[0_12px_35px_rgba(0,0,0,0.2),0_6px_15px_rgba(0,0,0,0.15)]";
-            } else {
+                  ? " bg-black/20 border-gray-700 text-gray-300 shadow-[0_8px_25px_rgba(0,0,0,0.3),0_4px_10px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_35px_rgba(0,0,0,0.4),0_6px_15px_rgba(0,0,0,0.3)]"
+                  : " bg-white/30 border-gray-200 text-gray-600 shadow-[0_8px_25px_rgba(0,0,0,0.15),0_4px_10px_rgba(0,0,0,0.1)] hover:shadow-[0_12px_35px_rgba(0,0,0,0.2),0_6px_15px_rgba(0,0,0,0.15)]";
+              } else {
                 containerClass += isDark
-                ? " bg-blue-900/30 border-yellow-400 shadow-[0_15px_40px_rgba(59,130,246,0.4),0_8px_20px_rgba(234,179,8,0.3),0_4px_10px_rgba(59,130,246,0.2)] ring-1 ring-yellow-600 hover:shadow-[0_20px_55px_rgba(59,130,246,0.5),0_10px_25px_rgba(234,179,8,0.4),0_5px_15px_rgba(59,130,246,0.3)]"
-                : " bg-white/40 border-yellow-300 shadow-[0_15px_40px_rgba(59,130,246,0.15),0_8px_20px_rgba(234,179,8,0.2),0_4px_10px_rgba(59,130,246,0.1)] ring-1 ring-yellow-300 hover:shadow-[0_20px_55px_rgba(59,130,246,0.2),0_10px_25px_rgba(234,179,8,0.15),0_5px_15px_rgba(59,130,246,0.2)]";
-            }
+                  ? " bg-blue-900/30 border-yellow-400 shadow-[0_15px_40px_rgba(59,130,246,0.4),0_8px_20px_rgba(234,179,8,0.3),0_4px_10px_rgba(59,130,246,0.2)] ring-1 ring-yellow-600 hover:shadow-[0_20px_55px_rgba(59,130,246,0.5),0_10px_25px_rgba(234,179,8,0.4),0_5px_15px_rgba(59,130,246,0.3)]"
+                  : " bg-white/40 border-yellow-300 shadow-[0_15px_40px_rgba(59,130,246,0.15),0_8px_20px_rgba(234,179,8,0.2),0_4px_10px_rgba(59,130,246,0.1)] ring-1 ring-yellow-300 hover:shadow-[0_20px_55px_rgba(59,130,246,0.2),0_10px_25px_rgba(234,179,8,0.15),0_5px_15px_rgba(59,130,246,0.2)]";
+              }
 
               return (
                 <div key={step.id} className={containerClass}>
@@ -259,18 +290,60 @@ export default function Roadmap() {
 
                   {/* Progress Bar */}
                   <div className="mt-4">
-                    <div
-                      className={`h-1 rounded-full transition-all duration-300 ${
-                        isCompleted
-                          ? "bg-gray-300"
-                          : isActive
-                          ? "bg-yellow-400 animate-pulse"
-                          : "bg-gray-200"
-                      }`}
-                      style={{
-                        width: isCompleted || !isActive ? "100%" : "72%",
-                      }}
-                    />
+                    {step.tasks && step.tasks.length > 0 ? (
+                      <>
+                        <div className="flex justify-between items-center mb-1">
+                          <span
+                            className={`text-xs font-medium transition-colors duration-300 ${
+                              isDark ? "text-gray-400" : "text-gray-600"
+                            }`}
+                          >
+                            Progress
+                          </span>
+                          <span
+                            className={`text-xs font-semibold transition-colors duration-300 ${
+                              isActive
+                                ? "text-yellow-400"
+                                : isDark
+                                ? "text-gray-400"
+                                : "text-gray-300"
+                            }`}
+                          >
+                            {calculateCompletionPercentage(step.tasks)}%
+                          </span>
+                        </div>
+                        <div className="relative w-full h-1 rounded-full bg-gray-200 dark:bg-gray-300 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-300 ${
+                              calculateCompletionPercentage(step.tasks) === 100
+                                ? ""
+                                : calculateCompletionPercentage(step.tasks) >
+                                    0 && isActive
+                                ? "animate-pulse"
+                                : ""
+                            } ${getProgressBarColor(
+                              calculateCompletionPercentage(step.tasks),
+                              isDark
+                            )}`}
+                            style={{
+                              width: `${calculateCompletionPercentage(
+                                step.tasks
+                              )}%`,
+                            }}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="relative w-full h-1 rounded-full bg-gray-200 dark:bg-gray-700">
+                        <div
+                          className={`h-full rounded-full transition-all duration-300 ${getProgressBarColor(
+                            0,
+                            isDark
+                          )}`}
+                          style={{ width: "0%" }}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               );
